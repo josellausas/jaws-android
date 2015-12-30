@@ -95,7 +95,11 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
 
         if (id == R.id.nav_camera) {
-            // Handle the camera action
+            setTitle("Dashboard");
+            DashboardFragment newFragment = new DashboardFragment();
+            android.app.FragmentTransaction transaction = getFragmentManager().beginTransaction();
+            transaction.replace(R.id.main_fragment_container, newFragment);
+            transaction.commit();
         } else if (id == R.id.nav_gallery) {
             setTitle("Gallery");
             MessagesFragment newFragment = new MessagesFragment();
@@ -104,12 +108,20 @@ public class MainActivity extends AppCompatActivity
             transaction.commit();
 
         } else if (id == R.id.nav_slideshow) {
+            setTitle("Slideshow");
 
         } else if (id == R.id.nav_manage) {
+            setTitle("Tools");
 
         } else if (id == R.id.nav_share) {
+            setTitle("Share");
 
         } else if (id == R.id.nav_send) {
+            setTitle("Messages");
+            MessagesFragment newFragment = new MessagesFragment();
+            android.app.FragmentTransaction transaction = getFragmentManager().beginTransaction();
+            transaction.replace(R.id.main_fragment_container, newFragment);
+            transaction.commit();
 
         }
 
