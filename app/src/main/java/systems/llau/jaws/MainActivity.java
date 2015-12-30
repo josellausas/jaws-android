@@ -1,5 +1,7 @@
 package systems.llau.jaws;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -12,6 +14,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import systems.llau.jaws.layout.DashboardFragment;
+import systems.llau.jaws.layout.MessagesFragment;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -40,6 +45,12 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        DashboardFragment fragment = new DashboardFragment();
+        FragmentManager fm = getFragmentManager();
+        android.app.FragmentTransaction transaction = fm.beginTransaction();
+        transaction.replace(R.id.main_fragment_container, fragment);
+        transaction.commit();
     }
 
     @Override
@@ -80,9 +91,17 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+
         if (id == R.id.nav_camera) {
             // Handle the camera action
         } else if (id == R.id.nav_gallery) {
+            setTitle("Gallery");
+            MessagesFragment newFragment = new MessagesFragment();
+            android.app.FragmentTransaction transaction = getFragmentManager().beginTransaction();
+            transaction.replace(R.id.main_fragment_container, newFragment);
+            transaction.commit();
 
         } else if (id == R.id.nav_slideshow) {
 
@@ -94,8 +113,7 @@ public class MainActivity extends AppCompatActivity
 
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
+
         return true;
     }
 }
