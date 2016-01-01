@@ -2,12 +2,14 @@ package systems.llau.jaws.LLau;
 
 import java.util.List;
 
+import systems.llau.jaws.layout.ListItemInterface;
+
 /**
  * Created by pp on 12/31/15.
  */
 
 
-public interface LLTarget
+public interface LLTarget extends ListItemInterface
 {
     public enum LLTargetType
     {
