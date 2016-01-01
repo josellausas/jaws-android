@@ -4,6 +4,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -20,7 +21,7 @@ public class LLSyncManager
         return ourInstance;
     }
 
-    private String username;
+    private String myUsername;
 
     private Map<Long, LLMessage> undeliveredMessages;
     private Map<Long, LLJornada> undeliveredJornadas;
@@ -38,7 +39,7 @@ public class LLSyncManager
 
     private LLSyncManager()
     {
-        username = "Ilegal user!!!";
+        myUsername = "Ilegal user!!!";
 
         // Allocates new maps for each list.
         this.undeliveredMessages = new HashMap<Long, LLMessage>();
@@ -54,14 +55,27 @@ public class LLSyncManager
 
     public void init(String username)
     {
-        this.username = username;
+        this.myUsername = username;
+
+        // Init the users:
+        List<LLUser> users = LLUser.listAll(LLUser.class);
+        for(int i = 0; i < users.size(); ++i)
+        {
+            LLUser u = users.get(i);
+            this.usersList.put(u.getId(), u);
+        }
+
+        // TODO: Do the other classes
     }
 
     private LLUser userWithJSON(JSONObject obj)
     {
+        LLUser u = null;
+
         try
         {
-            String username = obj.getString("username");
+            String uname = obj.getString("username");
+            u = new LLUser(uname);
         }
         catch (JSONException e)
         {
@@ -69,13 +83,16 @@ public class LLSyncManager
             return null;
         }
 
-        return new LLUser(username);
+        return u;
     }
 
 
     public boolean syncUsers(JSONArray array)
     {
         boolean authorized = false;
+
+
+
 
         // An array of JSON users:
         for(int i = 0; i < array.length(); ++i)
@@ -84,10 +101,10 @@ public class LLSyncManager
             {
                 JSONObject userJSON = array.getJSONObject(i);
 
-                String username = userJSON.getString("username");
+                String thisUserJSONName = userJSON.getString("username");
 
                 // Skip our own username
-                if( !username.equals(this.username) && username != null )
+                if( (!(thisUserJSONName.equals(this.myUsername)) && (thisUserJSONName != null)) )
                 {
                     LLUser userToSync = null;
 
@@ -101,7 +118,8 @@ public class LLSyncManager
                         // Get the value:
                         LLUser searchUser = this.usersList.get(theID);
 
-                        if(searchUser.getUsername().equals(username))
+                        // Search for one inside our thing.
+                        if(searchUser.getUsername().equals(thisUserJSONName))
                         {
                             // Found a match!!! Time to update!
                             // This overwirtes with the server information

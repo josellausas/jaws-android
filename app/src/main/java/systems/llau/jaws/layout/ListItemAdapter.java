@@ -37,7 +37,7 @@ public class ListItemAdapter extends ArrayAdapter
         LayoutInflater inflater = (LayoutInflater)getContext().getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
         if(convertView == null)
         {
-            viewToUse = inflater.inflate(R.layout.list_item, null);
+            viewToUse = inflater.inflate(R.layout.list_item_deafult, null);
 
             holder = new ViewHolder();
             holder.titleText = (TextView)viewToUse.findViewById(R.id.titleText);
