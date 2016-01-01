@@ -18,6 +18,7 @@ public class LLUser extends SugarRecord implements ListItemInterface
     private long updated_at;
     private long created_at;
 
+    public LLUser(){}
 
     public LLUser(String username)
     {

@@ -42,6 +42,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import cz.msebera.android.httpclient.Header;
+import systems.llau.jaws.LLau.LLSyncManager;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -213,7 +214,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
             showProgress(true);
 
-            getTasksAsyncForLogin(email, password);
+            getPermissionFromServer(email, password);
         }
     }
 
@@ -325,42 +326,44 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         return this;
     }
 
-    private void getTasksAsyncForLogin(String username, String password)
+    private void getPermissionFromServer(final String username, String password)
     {
         // Requests the tasks from the server
         AsyncHttpClient client = new AsyncHttpClient();
 
         client.setBasicAuth(username,password);
-        client.get("http://llau.systems/tasks", new JsonHttpResponseHandler()
+        client.get("http://llau.systems/users", new JsonHttpResponseHandler()
         {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response)
-            {
-
-                showProgress(false);
-
-                Log.i("TAG", "Success with login!!!");
-                Toast.makeText(getMyself(), "Welcome", Toast.LENGTH_SHORT).show();
-
-            }
-
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONArray response)
             {
 
                 showProgress(false);
-                Log.i("TAG", "Success with login!!!");
-                Toast.makeText(getMyself(), "Welcome", Toast.LENGTH_SHORT).show();
+
+                // Needed for everything to work:
+                LLSyncManager.getInstance().init(username);
+
+                boolean success = LLSyncManager.getInstance().syncUsers(response);
 
                 // Show the drawer activity
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                startActivity(intent);
+                if(success == true)
+                {
+                    Toast.makeText(getMyself(), "Login OK!", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                    startActivity(intent);
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "Failed Initial Sync! Please retry", Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
 
                 showProgress(false);
+
+                Log.e("HTTP", "Error: " + statusCode);
 
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();

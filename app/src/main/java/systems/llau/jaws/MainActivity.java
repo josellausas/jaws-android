@@ -17,12 +17,14 @@ import android.view.MenuItem;
 
 import systems.llau.jaws.layout.DashboardFragment;
 import systems.llau.jaws.layout.MessagesFragment;
+import systems.llau.jaws.layout.UserListFragment;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -46,10 +48,23 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        DashboardFragment fragment = new DashboardFragment();
+
+        // This is the default fragment to show:
+        DashboardFragment dashboardFragment = new DashboardFragment();
+
+
+        // Start with the Users for now:
+        UserListFragment userListFragment = new UserListFragment();
+
+
+        setFragment(userListFragment);
+    }
+
+    private void setFragment(Fragment frag)
+    {
         FragmentManager fm = getFragmentManager();
         android.app.FragmentTransaction transaction = fm.beginTransaction();
-        transaction.replace(R.id.main_fragment_container, fragment);
+        transaction.replace(R.id.main_fragment_container, frag);
         transaction.commit();
     }
 
