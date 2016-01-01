@@ -162,6 +162,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      */
     private void attemptLogin()
     {
+        boolean checkForEmail = false;
+
         // Dismisses the keyboard
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(this.mEmailView.getWindowToken(), 0);
@@ -185,17 +187,21 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
 
         // Check for a valid email address.
-        if (TextUtils.isEmpty(email)) {
+        if (TextUtils.isEmpty(email))
+        {
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
-        } else if (!isEmailValid(email)) {
+        }
+        else if ((!isEmailValid(email)) && checkForEmail)
+        {
             mEmailView.setError(getString(R.string.error_invalid_email));
             focusView = mEmailView;
             cancel = true;
         }
 
-        if (cancel) {
+        if (cancel)
+        {
             // There was an error; don't attempt login and focus the first
             // form field with an error.
             focusView.requestFocus();
@@ -207,11 +213,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
             showProgress(true);
 
-            getTasksAsyncForLogin();
+            getTasksAsyncForLogin(email, password);
         }
     }
 
-    private boolean isEmailValid(String email) {
+    private boolean isEmailValid(String email)
+    {
         //TODO: Replace this with your own logic
         return email.contains("@");
     }
@@ -318,12 +325,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         return this;
     }
 
-    private void getTasksAsyncForLogin()
+    private void getTasksAsyncForLogin(String username, String password)
     {
         // Requests the tasks from the server
         AsyncHttpClient client = new AsyncHttpClient();
 
-        client.setBasicAuth("jose","polo&xzaz");
+        client.setBasicAuth(username,password);
         client.get("http://llau.systems/tasks", new JsonHttpResponseHandler()
         {
             @Override
