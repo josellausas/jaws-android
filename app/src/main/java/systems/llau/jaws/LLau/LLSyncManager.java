@@ -1,5 +1,11 @@
 package systems.llau.jaws.LLau;
 
+import android.widget.Toast;
+
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,6 +15,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.entity.StringEntity;
 
 /**
  * Created by pp on 1/1/16.
@@ -173,4 +182,33 @@ public class LLSyncManager
         return true;
     }
 
+    private void postMessage()
+    {
+        // Attempt to post:
+        AsyncHttpClient client = new AsyncHttpClient();
+        RequestParams params = new RequestParams();
+
+        params.add("hola", "mundo");
+        StringEntity payload = null;
+        try {
+
+            payload = new StringEntity("");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        client.addHeader("Content-Type", "application/x-www-urlencoded");
+        client.setBasicAuth("jose", "polo&xzaz");
+        client.post("http://llau.systems/api/new", new AsyncHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                error.printStackTrace();
+            }
+        });
+    }
 }

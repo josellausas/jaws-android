@@ -56,35 +56,7 @@ public class UserListFragment extends ListFragment
 
 
 
-        // Attempt to post:
-        AsyncHttpClient client = new AsyncHttpClient();
-        RequestParams params   = new RequestParams();
 
-        params.add("hola", "mundo");
-        StringEntity payload = null;
-        try
-        {
-
-            payload = new StringEntity("");
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        client.addHeader("Content-Type", "application/x-www-urlencoded");
-        client.setBasicAuth("jose", "polo&xzaz");
-        client.post("http://llau.systems/api/new", new AsyncHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                Toast.makeText(getActivity(), "Sucess POST", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                Toast.makeText(getActivity(), "Failed POST", Toast.LENGTH_SHORT).show();
-                error.printStackTrace();
-            }});
 
         return rootView;
     }

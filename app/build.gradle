@@ -29,6 +29,12 @@ android {
     }
 }
 
+repositories {
+    maven { url "https://jitpack.io" }
+}
+
+
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
@@ -46,4 +52,7 @@ dependencies {
 
     // Time Library
     compile 'net.danlew:android.joda:2.8.1'
+
+    // Charts
+    compile 'com.github.PhilJay:MPAndroidChart:v2.1.6'
 }
