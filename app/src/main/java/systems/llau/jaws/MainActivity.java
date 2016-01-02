@@ -38,15 +38,6 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // The action button
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         // Activity drawer
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -61,13 +52,7 @@ public class MainActivity extends AppCompatActivity
 
         // This is the default fragment to show:
         DashboardFragment dashboardFragment = new DashboardFragment();
-
-
-        // Start with the Users for now:
-        UserListFragment userListFragment = new UserListFragment();
-
-
-        showFragmentNow(userListFragment);
+        showFragmentNow(dashboardFragment);
     }
 
     private void showFragmentNow(Fragment frag)
@@ -89,13 +74,21 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /*
+     * Sets up the Settings menu
+     */
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
+
+    /*
+     * Handles options selections
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -112,6 +105,9 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+    /*
+     *  Handles the Menu selection
+     */
     @Override
     public boolean onNavigationItemSelected(MenuItem item)
     {
