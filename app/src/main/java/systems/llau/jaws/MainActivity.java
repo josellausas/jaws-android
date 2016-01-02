@@ -5,6 +5,7 @@ import android.app.FragmentManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -14,22 +15,30 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import systems.llau.jaws.layout.DashboardFragment;
 import systems.llau.jaws.layout.MessagesFragment;
+import systems.llau.jaws.layout.TaskListFragment;
 import systems.llau.jaws.layout.UserListFragment;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener
+{
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        // Inflate the view.
         setContentView(R.layout.activity_main);
+
+        // Setup the toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // The action button
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -39,6 +48,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        // Activity drawer
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -57,10 +67,10 @@ public class MainActivity extends AppCompatActivity
         UserListFragment userListFragment = new UserListFragment();
 
 
-        setFragment(userListFragment);
+        showFragmentNow(userListFragment);
     }
 
-    private void setFragment(Fragment frag)
+    private void showFragmentNow(Fragment frag)
     {
         FragmentManager fm = getFragmentManager();
         android.app.FragmentTransaction transaction = fm.beginTransaction();
@@ -69,7 +79,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onBackPressed() {
+    public void onBackPressed()
+    {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
@@ -100,45 +111,72 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
+
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(MenuItem item)
+    {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
 
-        if (id == R.id.nav_camera) {
-            setTitle("Dashboard");
-            DashboardFragment newFragment = new DashboardFragment();
-            android.app.FragmentTransaction transaction = getFragmentManager().beginTransaction();
-            transaction.replace(R.id.main_fragment_container, newFragment);
-            transaction.commit();
-        } else if (id == R.id.nav_gallery) {
-            setTitle("Gallery");
-            MessagesFragment newFragment = new MessagesFragment();
-            android.app.FragmentTransaction transaction = getFragmentManager().beginTransaction();
-            transaction.replace(R.id.main_fragment_container, newFragment);
-            transaction.commit();
 
-        } else if (id == R.id.nav_slideshow) {
-            setTitle("Slideshow");
+        // Menu switch
+        switch (id)
+        {
+            case R.id.nav_dashboard:
+            {
+                setTitle("Dashboard");
+                DashboardFragment newFragment = new DashboardFragment();
+                showFragmentNow(newFragment);
 
-        } else if (id == R.id.nav_manage) {
-            setTitle("Tools");
+            } break;
 
-        } else if (id == R.id.nav_share) {
-            setTitle("Share");
+            case R.id.nav_users:
+            {
+                setTitle("Users");
+                UserListFragment newFragment = new UserListFragment();
+                showFragmentNow(newFragment);
+            }break;
 
-        } else if (id == R.id.nav_send) {
-            setTitle("Messages");
-            MessagesFragment newFragment = new MessagesFragment();
-            android.app.FragmentTransaction transaction = getFragmentManager().beginTransaction();
-            transaction.replace(R.id.main_fragment_container, newFragment);
-            transaction.commit();
+            case R.id.nav_tasks:
+            {
+                setTitle("Tasks");
+                TaskListFragment taskListFragment = new TaskListFragment();
+                showFragmentNow(taskListFragment);
 
+            }break;
+
+            case R.id.nav_organizations:
+            {
+                setTitle("Organizations");
+                // TODO: Implement
+
+            }break;
+
+            case R.id.nav_dev_tools:
+            {
+                setTitle("Dev Tools");
+                // TODO: Implement
+
+            }break;
+
+            case R.id.nav_messages:
+            {
+                setTitle("Messages");
+                MessagesFragment msgFragment = new MessagesFragment();
+                showFragmentNow(msgFragment);
+            }break;
+
+
+            default:
+            {
+                Log.e("MainActivity", "Menu ID Unkwown");
+            }
         }
+
+
 
 
         return true;

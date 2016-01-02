@@ -10,10 +10,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.Toast;
+
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Calendar;
 import java.util.List;
 
+import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.entity.StringEntity;
 import systems.llau.jaws.LLau.LLTask;
 import systems.llau.jaws.R;
 
@@ -29,12 +39,17 @@ public class TaskListFragment extends ListFragment
     @Nullable @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstancec)
     {
-        View rootView = inflater.inflate(R.layout.fragment_task_list, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_easy_list, container, false);
 
         // Indicates that we override the menu.
         setHasOptionsMenu(true);
 
         listView = (ListView)rootView.findViewById(android.R.id.list);
+
+
+
+
+
 
         return rootView;
     }
@@ -45,11 +60,13 @@ public class TaskListFragment extends ListFragment
         setListAdapter(adapter);
     }
 
+
+
     private void loadTaskList()
     {
-        List<LLTask> taskDataList = LLTask.listAll(LLTask.class);
-
-
+        // LOL, typecast with a variable!!! OMG Java
+        List l = LLTask.listAll(LLTask.class);
+        taskItemList = l;
     }
 
     private Long getTodayDate()
@@ -69,6 +86,12 @@ public class TaskListFragment extends ListFragment
     @Override
     public void onResume()
     {
+        super.onResume();
+
+        loadTaskList();
+
+        setupAdapter();
+
 
     }
 
