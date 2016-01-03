@@ -55,4 +55,10 @@ dependencies {
 
     // Charts
     compile 'com.github.PhilJay:MPAndroidChart:v2.1.6'
+
+    // Advanced lists
+    compile ('com.h6ah4i.android.widget.advrecyclerview:advrecyclerview:0.8.5@aar'){
+        transitive=true
+    }
+
 }
