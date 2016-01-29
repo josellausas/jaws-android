@@ -105,6 +105,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="systems.llau.jaws.LoginActivity" />
         </activity>
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="285170041a1d30faed205f5c430c76aeab54fa0c" />
     </application>
 
 </manifest>

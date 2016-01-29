@@ -17,14 +17,123 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
+import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttPersistable;
+import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
+import org.eclipse.paho.client.mqttv3.MqttSecurityException;
+
 import systems.llau.jaws.layout.DashboardFragment;
 import systems.llau.jaws.layout.MessagesFragment;
 import systems.llau.jaws.layout.TaskListFragment;
 import systems.llau.jaws.layout.UserListFragment;
 
+
+import java.util.Enumeration;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener
 {
+
+    MqttAsyncClient mqtt = null;
+
+    private void publishMessage(final String msg)
+    {
+
+        Log.i("Main", "Publishing " + msg);
+        try
+        {
+            if(mqtt == null)
+            {
+                Log.i("Main", "Creating mqtt ");
+                // Create the mqtt
+                String uri = "tcp://m10.cloudmqtt.com:11915";
+
+                mqtt = new MqttAsyncClient(uri, "device01", null);
+
+                MqttConnectOptions option = new MqttConnectOptions();
+                option.setUserName("device01");
+                option.setPassword("device01".toCharArray());
+                String lastWillMessage = "androidDevice offline";
+                // Config the thing
+                option.setWill("v1/status/androidDevice", lastWillMessage.getBytes(), 2, true);
+            }
+
+
+            if(mqtt.isConnected() == false)
+            {
+                Log.i("Main", "Connecting mqtt ");
+                mqtt.connect(getApplicationContext(), new IMqttActionListener() {
+                    @Override
+                    public void onSuccess(IMqttToken asyncActionToken)
+                    {
+                        try
+                        {
+                            mqtt.publish("v1/status/androidDevice", "androidDevice online".getBytes(), 2, true);
+                            mqtt.publish("v1/notify/server",msg.getBytes(), 1, true);
+                        }
+                        catch (MqttPersistenceException e)
+                        {
+
+                            e.printStackTrace();
+                        }
+                        catch (MqttSecurityException e)
+                        {
+                            e.printStackTrace();
+                        }
+                        catch (MqttException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(IMqttToken asyncActionToken, Throwable exception)
+                    {
+                        exception.printStackTrace();
+                    }
+                });
+            }
+            else
+            {
+                try
+                {
+                    mqtt.publish("v1/status/androidDevice", "androidDevice online".getBytes(), 2, true);
+                    mqtt.publish("v1/notify/server", msg.getBytes(), 1, true);
+                }
+                catch (MqttPersistenceException e)
+                {
+
+                    e.printStackTrace();
+                }
+                catch (MqttSecurityException e)
+                {
+                    e.printStackTrace();
+                }
+                catch (MqttException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+        catch (MqttPersistenceException e)
+        {
+            e.printStackTrace();
+        }
+        catch (MqttSecurityException e)
+        {
+            e.printStackTrace();
+        }
+        catch (MqttException e)
+        {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -53,6 +162,10 @@ public class MainActivity extends AppCompatActivity
         // This is the default fragment to show:
         DashboardFragment dashboardFragment = new DashboardFragment();
         showFragmentNow(dashboardFragment);
+
+
+        publishMessage("Started app");
+
     }
 
     private void showFragmentNow(Fragment frag)
@@ -123,6 +236,7 @@ public class MainActivity extends AppCompatActivity
         {
             case R.id.nav_dashboard:
             {
+                publishMessage("androidDevice: Stated Dashboard");
                 setTitle("Dashboard");
                 DashboardFragment newFragment = new DashboardFragment();
                 showFragmentNow(newFragment);
@@ -138,6 +252,7 @@ public class MainActivity extends AppCompatActivity
 
             case R.id.nav_tasks:
             {
+                publishMessage("androidDevice: Stated tasks");
                 setTitle("Tasks");
                 TaskListFragment taskListFragment = new TaskListFragment();
                 showFragmentNow(taskListFragment);
