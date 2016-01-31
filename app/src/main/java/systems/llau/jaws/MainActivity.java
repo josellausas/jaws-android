@@ -2,9 +2,12 @@ package systems.llau.jaws;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -17,7 +20,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-
+import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
@@ -27,6 +30,9 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttPersistable;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 
 import systems.llau.jaws.layout.DashboardFragment;
 import systems.llau.jaws.layout.MessagesFragment;
@@ -34,15 +40,32 @@ import systems.llau.jaws.layout.TaskListFragment;
 import systems.llau.jaws.layout.UserListFragment;
 
 
+import java.util.ArrayList;
 import java.util.Enumeration;
+
+class MyMQTTMessage
+{
+    public String channel;
+    public String msg;
+
+    public MyMQTTMessage(String c, String m)
+    {
+        this.channel = c;
+        this.msg = m;
+    }
+}
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener
 {
 
-    MqttAsyncClient mqtt = null;
+    private MqttAsyncClient mqtt = null;
+    private MqttConnectOptions options = null;
+    private ArrayList<MyMQTTMessage> failedMessages = null;
 
-    private void publishMessage(final String msg)
+
+
+    private void publishMessage(final String channel, final String msg)
     {
 
         Log.i("Main", "Publishing " + msg);
@@ -54,41 +77,45 @@ public class MainActivity extends AppCompatActivity
                 // Create the mqtt
                 String uri = "tcp://m10.cloudmqtt.com:11915";
 
-                mqtt = new MqttAsyncClient(uri, "device01", null);
+                mqtt = new MqttAsyncClient(uri, "elcliente2001", null);
 
-                MqttConnectOptions option = new MqttConnectOptions();
-                option.setUserName("device01");
-                option.setPassword("device01".toCharArray());
+                options = new MqttConnectOptions();
+                options.setCleanSession(true);
+                options.setUserName("device01");
+                options.setPassword("device01".toCharArray());
                 String lastWillMessage = "androidDevice offline";
                 // Config the thing
-                option.setWill("v1/status/androidDevice", lastWillMessage.getBytes(), 2, true);
+                options.setWill("v1/status/androidDevice", lastWillMessage.getBytes(), 1, true);
             }
+
 
 
             if(mqtt.isConnected() == false)
             {
                 Log.i("Main", "Connecting mqtt ");
-                mqtt.connect(getApplicationContext(), new IMqttActionListener() {
+                mqtt.connect(options, getApplicationContext(), new IMqttActionListener() {
                     @Override
                     public void onSuccess(IMqttToken asyncActionToken)
                     {
                         try
                         {
                             mqtt.publish("v1/status/androidDevice", "androidDevice online".getBytes(), 2, true);
-                            mqtt.publish("v1/notify/server",msg.getBytes(), 1, true);
+                            mqtt.publish("v1/" + channel ,msg.getBytes(), 1, false);
                         }
                         catch (MqttPersistenceException e)
                         {
-
                             e.printStackTrace();
+                            messageHasFailed(channel, msg);
                         }
                         catch (MqttSecurityException e)
                         {
                             e.printStackTrace();
+                            messageHasFailed(channel, msg);
                         }
                         catch (MqttException e)
                         {
                             e.printStackTrace();
+                            messageHasFailed(channel, msg);
                         }
                     }
 
@@ -96,6 +123,7 @@ public class MainActivity extends AppCompatActivity
                     public void onFailure(IMqttToken asyncActionToken, Throwable exception)
                     {
                         exception.printStackTrace();
+                        messageHasFailed(channel, msg);
                     }
                 });
             }
@@ -103,42 +131,58 @@ public class MainActivity extends AppCompatActivity
             {
                 try
                 {
-                    mqtt.publish("v1/status/androidDevice", "androidDevice online".getBytes(), 2, true);
-                    mqtt.publish("v1/notify/server", msg.getBytes(), 1, true);
+                    mqtt.publish("v1/" + channel, msg.getBytes(), 1, false);
                 }
                 catch (MqttPersistenceException e)
                 {
-
                     e.printStackTrace();
+                    messageHasFailed(channel, msg);
                 }
                 catch (MqttSecurityException e)
                 {
                     e.printStackTrace();
+                    messageHasFailed(channel, msg);
                 }
                 catch (MqttException e)
                 {
                     e.printStackTrace();
+                    messageHasFailed(channel, msg);
                 }
             }
         }
         catch (MqttPersistenceException e)
         {
             e.printStackTrace();
+            messageHasFailed(channel, msg);
         }
         catch (MqttSecurityException e)
         {
             e.printStackTrace();
+            messageHasFailed(channel, msg);
         }
         catch (MqttException e)
         {
             e.printStackTrace();
+            messageHasFailed(channel, msg);
         }
+    }
+
+    private void messageHasFailed(String chan,String msg)
+    {
+        // Creates a message instance and adds it to the failed message list
+        MyMQTTMessage failedOne = new MyMQTTMessage(chan,msg);
+        this.failedMessages.add(failedOne);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        // Start with a clean failed messages list
+        this.failedMessages = new ArrayList<MyMQTTMessage>();
+
+        // TODO: Load from disk the last failed messages
 
         // Inflate the view.
         setContentView(R.layout.activity_main);
@@ -163,9 +207,58 @@ public class MainActivity extends AppCompatActivity
         DashboardFragment dashboardFragment = new DashboardFragment();
         showFragmentNow(dashboardFragment);
 
+        if(savedInstanceState == null)
+        {
+            SharedPreferences settings = getSharedPreferences("JawsPreferences", 0);
+            boolean isInstalled = settings.getBoolean("installed", false);
+            if(isInstalled)
+            {
+                // Install the thing
+                installApp();
+            }
+        }
 
-        publishMessage("Started app");
+        // Check for installation:
 
+
+
+
+
+    }
+
+    private void installApp()
+    {
+        // Get the information from the telephone and register it with MQTT
+        TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
+        String imsi = telephonyManager.getSubscriberId();
+        String deviceId = telephonyManager.getDeviceId();
+        String version = telephonyManager.getDeviceSoftwareVersion();
+        String operator = telephonyManager.getNetworkOperatorName();
+        String number = telephonyManager.getLine1Number();
+
+
+        JSONObject json = new JSONObject();
+
+        try
+        {
+            json.put("a", imsi);
+            json.put("b", deviceId);
+            json.put("c", version);
+            json.put("d", operator);
+            json.put("e", number);
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+
+        SharedPreferences settings = getSharedPreferences("JawsPreferences", 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putBoolean("installed", true);
+
+        // Commit the edits!
+        editor.commit();
+        publishMessage("notify/device", json.toString());
     }
 
     private void showFragmentNow(Fragment frag)
@@ -236,7 +329,7 @@ public class MainActivity extends AppCompatActivity
         {
             case R.id.nav_dashboard:
             {
-                publishMessage("androidDevice: Stated Dashboard");
+                publishMessage("v1/notify/device", "androidDevice: Stated Dashboard");
                 setTitle("Dashboard");
                 DashboardFragment newFragment = new DashboardFragment();
                 showFragmentNow(newFragment);
@@ -252,7 +345,7 @@ public class MainActivity extends AppCompatActivity
 
             case R.id.nav_tasks:
             {
-                publishMessage("androidDevice: Stated tasks");
+                publishMessage("v1/notify/device", "androidDevice: Stated tasks");
                 setTitle("Tasks");
                 TaskListFragment taskListFragment = new TaskListFragment();
                 showFragmentNow(taskListFragment);

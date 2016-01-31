@@ -27,8 +27,6 @@
     <!-- FOR GETTING MAC ADDRESS -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
-    <!-- FOR GETTING IMEI -->
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <!-- FOR GPS -->
     <!-- <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"/> -->
