@@ -32,14 +32,21 @@ import systems.llau.jaws.R;
 public class DashboardFragment extends Fragment implements
         OnChartValueSelectedListener
 {
-    private PieChart pieChart;
+    private PieChart pieChart;          /// A dashboard chart
     private Typeface tf;
 
     @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstane)
     {
-
         View rootView = inflater.inflate(R.layout.fragment_dashboard, container, false);
+        setupChart(rootView);
 
+        return rootView;
+
+    }
+
+    private void testChart(View rootView)
+    {
+        // Init the pie chart
         pieChart = (PieChart)rootView.findViewById(R.id.chart1);
         pieChart.setUsePercentValues(true);
         pieChart.setDescription("Time usage");
@@ -79,17 +86,60 @@ public class DashboardFragment extends Fragment implements
         l.setXEntrySpace(7f);
         l.setYEntrySpace(0f);
         l.setYOffset(0f);
+    }
 
+    private void setupChart(View rootView)
+    {
+        // Init the pie chart
+        pieChart = (PieChart)rootView.findViewById(R.id.chart1);
 
-        return rootView;
+        pieChart.setUsePercentValues(true);
 
+        pieChart.setDescription("Time usage");
+        pieChart.setExtraOffsets(5, 10, 5, 5);
+
+        pieChart.setDragDecelerationFrictionCoef(0.95f);
+
+        pieChart.setDrawHoleEnabled(true);
+        pieChart.setHoleColorTransparent(true);
+
+        pieChart.setTransparentCircleColor(Color.WHITE);
+        pieChart.setTransparentCircleAlpha(110);
+
+        pieChart.setHoleRadius(20f);
+        pieChart.setTransparentCircleRadius(30f);
+
+        pieChart.setDrawCenterText(true);
+        pieChart.setCenterText("Analitics");
+
+        pieChart.setRotationAngle(0);
+        // enable rotation of the chart by touch
+        pieChart.setRotationEnabled(true);
+        pieChart.setHighlightPerTapEnabled(true);
+
+        // mChart.setUnit(" €");
+        // mChart.setDrawUnitsInChart(true);
+
+        // add a selection listener
+        pieChart.setOnChartValueSelectedListener(this);
+
+        setData(3, 100);
+
+        pieChart.animateY(1400, Easing.EasingOption.EaseInOutQuad);
+        // mChart.spin(2000, 0, 360);
+
+        Legend l = pieChart.getLegend();
+        l.setPosition(Legend.LegendPosition.RIGHT_OF_CHART);
+        l.setXEntrySpace(7f);
+        l.setYEntrySpace(0f);
+        l.setYOffset(0f);
     }
 
     private void setData(int count, float range)
     {
         float mult = range;
 
-        String[] mParties = {"Activity A","Activity B","Activity C","Activity D"};
+        String[] mParties = {"Dato A","Dato B","Dato C","Dato D"};
 
         ArrayList<Entry> yVals1 = new ArrayList<Entry>();
 

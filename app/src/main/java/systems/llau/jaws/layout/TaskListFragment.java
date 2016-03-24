@@ -3,6 +3,8 @@ package systems.llau.jaws.layout;
 import android.app.ListFragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -46,10 +48,21 @@ public class TaskListFragment extends ListFragment
 
         listView = (ListView)rootView.findViewById(android.R.id.list);
 
-
-
-
-
+        // Create a Fab
+        // The action button
+        FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                NewTaskFragment nextFrag= new NewTaskFragment();
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.containerthing, nextFrag,"systems.llau.tagf" )
+                        .addToBackStack(null)
+                        .commit();
+//                Snackbar.make(view, "Create task goes here", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+            }
+        });
 
         return rootView;
     }
@@ -89,10 +102,7 @@ public class TaskListFragment extends ListFragment
         super.onResume();
 
         loadTaskList();
-
         setupAdapter();
-
-
     }
 
     private void refreshUI()
