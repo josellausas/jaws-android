@@ -456,7 +456,7 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    private Location getLastLocation()
+    public Location getLastLocation()
     {
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         if(permissionCheck == PackageManager.PERMISSION_GRANTED)

@@ -54,4 +54,14 @@ public class LLLocation extends SugarRecord implements ListItemInterface
         return sdf.format(resultdate);
     }
 
+    public double getLatitude()
+    {
+        return this.latitude;
+    }
+
+    public double getLongitude()
+    {
+        return this.longitude;
+    }
+
 }
