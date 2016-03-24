@@ -35,6 +35,11 @@
                 android:id="@+id/nav_messages"
                 android:icon="@drawable/ic_menu_send"
                 android:title="Send Message" />
+
+            <item
+                android:id="@+id/location_log"
+                android:icon="@drawable/ic_menu_send"
+                android:title="Location Logs" />
         </menu>
     </item>
 

@@ -1,10 +1,16 @@
 package systems.llau.jaws;
 
+import android.*;
+import android.Manifest;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.support.design.widget.NavigationView;
@@ -16,7 +22,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
@@ -27,9 +36,12 @@ import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import systems.llau.jaws.Base.LLLocation;
 import systems.llau.jaws.Base.LLNotification;
 import systems.llau.jaws.layout.DashboardFragment;
 import systems.llau.jaws.layout.GeoFencesFragment;
+import systems.llau.jaws.layout.LocationListFragment;
 import systems.llau.jaws.layout.MessagesFragment;
 import systems.llau.jaws.layout.TaskListFragment;
 import systems.llau.jaws.layout.UserListFragment;
@@ -48,13 +60,16 @@ class MyMQTTMessage
 }
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener
+        implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener
 {
 
     private MqttAsyncClient    mqtt     = null;
     private MqttConnectOptions options  = null;
     private ArrayList<MyMQTTMessage> failedMessages = null;
     private String identifier = null;
+
+    private GoogleApiClient apiClient = null;
+    private Location lastLocation = null;
 
     private void notifyServer(int severity, String msg)
     {
@@ -184,6 +199,8 @@ public class MainActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
 
+
+
         // Start with a clean failed messages list
         this.failedMessages = new ArrayList<MyMQTTMessage>();
 
@@ -223,8 +240,16 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-        // Check for installation:
+        // Setup google services
+        this.checkPlayServices();
 
+        if(apiClient == null) {
+            apiClient = new GoogleApiClient.Builder(this)
+                    .addApi(LocationServices.API)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .build();
+        }
 
 
 
@@ -283,6 +308,20 @@ public class MainActivity extends AppCompatActivity
         } else {
             super.onBackPressed();
         }
+    }
+
+    @Override
+    public void onStart()
+    {
+        apiClient.connect();
+        super.onStart();
+    }
+
+    @Override
+    public void onStop()
+    {
+        apiClient.disconnect();
+        super.onStop();
     }
 
     /*
@@ -385,6 +424,13 @@ public class MainActivity extends AppCompatActivity
                 showFragmentNow(fragment);
             }break;
 
+            case R.id.location_log:
+            {
+                setTitle("Locations");
+                LocationListFragment frag = new LocationListFragment();
+                showFragmentNow(frag);
+            } break;
+
 
             default:
             {
@@ -392,6 +438,70 @@ public class MainActivity extends AppCompatActivity
             }
         }
         return true;
+    }
+
+
+    private boolean checkPlayServices()
+    {
+        int result = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+
+        return true;
+    }
+
+    @Override
+    public void onConnectionSuspended(int error)
+    {
+
+    }
+
+    private Location getLastLocation()
+    {
+        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        if(permissionCheck == PackageManager.PERMISSION_GRANTED)
+        {
+            lastLocation = LocationServices.FusedLocationApi.getLastLocation(apiClient);
+
+            LLLocation instancedLocation = new LLLocation(lastLocation);
+            instancedLocation.save();
+
+            String locationStr = "Loc: " + lastLocation.getLatitude() + " - " + lastLocation.getLongitude();
+            Log.e("LOC", locationStr);
+            return lastLocation;
+        }
+        else
+        {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
+            return lastLocation;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults)
+    {
+        switch (requestCode)
+        {
+            case 0:
+            {
+                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                {
+                    getLastLocation();
+                }
+            }break;
+        }
+    }
+
+    @Override
+    public void onConnected(Bundle bundle)
+    {
+        Log.e("TAG", "Hola");
+
+        Location uno = this.getLastLocation();
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult result)
+    {
+
     }
 
 
