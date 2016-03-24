@@ -18,6 +18,11 @@
             android:id="@+id/nav_organizations"
             android:icon="@drawable/ic_account_balance"
             android:title="Organizations" />
+
+        <item
+            android:id="@+id/nav_geofences"
+            android:icon="@drawable/ic_poll"
+            android:title="Geo-fences" />
     </group>
 
     <item android:title="Developer Menu">

@@ -5,11 +5,8 @@ import android.app.FragmentManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -18,40 +15,32 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
-
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
-import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttPersistable;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-
+import systems.llau.jaws.Base.LLNotification;
 import systems.llau.jaws.layout.DashboardFragment;
+import systems.llau.jaws.layout.GeoFencesFragment;
 import systems.llau.jaws.layout.MessagesFragment;
 import systems.llau.jaws.layout.TaskListFragment;
 import systems.llau.jaws.layout.UserListFragment;
-
-
 import java.util.ArrayList;
-import java.util.Enumeration;
 
 class MyMQTTMessage
 {
     public String channel;
-    public String msg;
+    public JSONObject payload;
 
-    public MyMQTTMessage(String c, String m)
+    public MyMQTTMessage(String c, JSONObject o)
     {
         this.channel = c;
-        this.msg = m;
+        this.payload = o;
     }
 }
 
@@ -59,13 +48,26 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener
 {
 
-    private MqttAsyncClient mqtt = null;
-    private MqttConnectOptions options = null;
+    private MqttAsyncClient    mqtt     = null;
+    private MqttConnectOptions options  = null;
     private ArrayList<MyMQTTMessage> failedMessages = null;
+    private String identifier = null;
+
+    private void notifyServer(int severity, String msg)
+    {
+        if(identifier == null)
+        {
+            // Get the information from the telephone and register it with MQTT
+            TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
+            identifier = telephonyManager.getSubscriberId();
+        }
+        LLNotification note = new LLNotification(severity, msg, identifier);
+        // Publish as a json string
+        this.publishMessage("notify/device", note.toJSON());
+    }
 
 
-
-    private void publishMessage(final String channel, final String msg)
+    private void publishMessage(final String channel, final JSONObject msg)
     {
 
         Log.i("Main", "Publishing " + msg);
@@ -100,7 +102,7 @@ public class MainActivity extends AppCompatActivity
                         try
                         {
                             mqtt.publish("v1/status/androidDevice", "androidDevice online".getBytes(), 2, true);
-                            mqtt.publish("v1/" + channel ,msg.getBytes(), 1, false);
+                            mqtt.publish("v1/" + channel ,msg.toString().getBytes(), 1, false);
                         }
                         catch (MqttPersistenceException e)
                         {
@@ -131,7 +133,7 @@ public class MainActivity extends AppCompatActivity
             {
                 try
                 {
-                    mqtt.publish("v1/" + channel, msg.getBytes(), 1, false);
+                    mqtt.publish("v1/" + channel, msg.toString().getBytes(), 1, false);
                 }
                 catch (MqttPersistenceException e)
                 {
@@ -167,10 +169,10 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void messageHasFailed(String chan,String msg)
+    private void messageHasFailed(String chan,JSONObject msg)
     {
         // Creates a message instance and adds it to the failed message list
-        MyMQTTMessage failedOne = new MyMQTTMessage(chan,msg);
+        MyMQTTMessage failedOne = new MyMQTTMessage(chan, msg);
         this.failedMessages.add(failedOne);
     }
 
@@ -258,7 +260,7 @@ public class MainActivity extends AppCompatActivity
 
         // Commit the edits!
         editor.commit();
-        publishMessage("notify/device", json.toString());
+        publishMessage("notify/device", json);
     }
 
     private void showFragmentNow(Fragment frag)
@@ -329,7 +331,7 @@ public class MainActivity extends AppCompatActivity
         {
             case R.id.nav_dashboard:
             {
-                publishMessage("v1/notify/device", "androidDevice: Stated Dashboard");
+                notifyServer(0, "Started Dashboard");
                 setTitle("Dashboard");
                 DashboardFragment newFragment = new DashboardFragment();
                 showFragmentNow(newFragment);
@@ -345,7 +347,7 @@ public class MainActivity extends AppCompatActivity
 
             case R.id.nav_tasks:
             {
-                publishMessage("v1/notify/device", "androidDevice: Stated tasks");
+                notifyServer(0, "Stated tasks");
                 setTitle("Tasks");
                 TaskListFragment taskListFragment = new TaskListFragment();
                 showFragmentNow(taskListFragment);
@@ -371,6 +373,13 @@ public class MainActivity extends AppCompatActivity
                 setTitle("Messages");
                 MessagesFragment msgFragment = new MessagesFragment();
                 showFragmentNow(msgFragment);
+            }break;
+
+            case R.id.nav_geofences:
+            {
+                setTitle("Geo-fences");
+                GeoFencesFragment fragment = new GeoFencesFragment();
+                showFragmentNow(fragment);
             }break;
 
 
