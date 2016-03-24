@@ -32,7 +32,7 @@ import systems.llau.jaws.R;
 public class GeoFencesFragment extends Fragment implements OnMapReadyCallback
 {
     private MapView mapView = null;
-    private GoogleMap map = null;
+    private GoogleMap map   = null;
 
     @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstane)
     {
@@ -53,7 +53,8 @@ public class GeoFencesFragment extends Fragment implements OnMapReadyCallback
         map.getUiSettings().setMyLocationButtonEnabled(false);
         MapsInitializer.initialize(this.getActivity());
 
-        map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+        map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback()
+        {
             @Override
             public void onMapLoaded() {
                 // Set the map type
@@ -98,9 +99,8 @@ public class GeoFencesFragment extends Fragment implements OnMapReadyCallback
         // Set the map type
         map.setMapType(GoogleMap.MAP_TYPE_HYBRID);
 
-
+        // Get the current location
         MainActivity activity = (MainActivity)getActivity();
-
         Location loc = activity.getLastLocation();
         LatLng currentPos = new LatLng(loc.getLatitude(), loc.getLongitude());
         if(loc != null)
@@ -120,7 +120,6 @@ public class GeoFencesFragment extends Fragment implements OnMapReadyCallback
         }
 
         // Set the camera
-
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentPos, 15));
 //        map.animateCamera(CameraUpdateFactory.zoomIn());
     }
