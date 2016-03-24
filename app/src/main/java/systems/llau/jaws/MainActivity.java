@@ -1,6 +1,5 @@
 package systems.llau.jaws;
 
-import android.*;
 import android.Manifest;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -26,6 +25,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+
+import net.danlew.android.joda.JodaTimeAndroid;
 
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
@@ -199,7 +200,8 @@ public class MainActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
 
-
+        // Initialize the Joda time
+        JodaTimeAndroid.init(this);
 
         // Start with a clean failed messages list
         this.failedMessages = new ArrayList<MyMQTTMessage>();
