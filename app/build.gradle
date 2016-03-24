@@ -20,6 +20,7 @@ android {
         targetSdkVersion 23
         versionCode 3
         versionName "1.0.2"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -87,6 +88,8 @@ dependencies {
         transitive = true;
     }
     compile fileTree(dir: 'native-libs', include: 'native-libs.jar')
+
+    compile 'com.google.android.gms:play-services:8.4.0'
 
 }
 

@@ -15,6 +15,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import com.google.android.gms.common.GooglePlayServicesUtil;
+
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
@@ -388,10 +391,8 @@ public class MainActivity extends AppCompatActivity
                 Log.e("MainActivity", "Menu ID Unkwown");
             }
         }
-
-
-
-
         return true;
     }
+
+
 }
