@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -43,6 +44,10 @@ public class NewTaskActivityFragment extends Fragment
 
         // The create button
         createButton = (Button)rootView.findViewById(R.id.createButton);
+
+        // Dissable autofocus for keyboard
+        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+
 
         return rootView;
     }
