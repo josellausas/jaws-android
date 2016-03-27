@@ -28,6 +28,7 @@ public class LLTask extends LLLogable implements ListItemInterface
     private String title = null;
     private Long    date = null;
     private String notes = null;
+    private boolean isComplete = false;
 
     public LLTask()
     {
@@ -42,6 +43,7 @@ public class LLTask extends LLLogable implements ListItemInterface
         this.title = title;
         this.date  = dueDate.getTime();
         this.notes = notes;
+
     }
 
     /// Accesors
@@ -53,6 +55,8 @@ public class LLTask extends LLLogable implements ListItemInterface
     public String getNotes() {return this.notes;}
     public void setTitle(String t)          { this.title = t;}
     public String getTitle()                { return this.title;}
+    public boolean isComplete() {return this.isComplete;}
+    public void setComplete(boolean b){this.isComplete = b;}
 
 
 
@@ -68,7 +72,7 @@ public class LLTask extends LLLogable implements ListItemInterface
     public String getReadableDate(long timestamp)
     {
         DateFormat.getInstance().format(timestamp);
-        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd,yyyy - (HH:mm)");
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");
         Date resultdate = new Date(timestamp);
         return sdf.format(resultdate);
     }
