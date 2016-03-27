@@ -14,24 +14,23 @@ import systems.llau.jaws.layout.ListItemInterface;
 /**
  * Created by pp on 3/23/16.
  */
-public class LLLocation extends SugarRecord implements ListItemInterface
+public class LLLocation extends LLLogable implements ListItemInterface
 {
     double latitude;        /// Latitude
     double longitude;       /// Longitude
-    long   timestamp;       /// Time created
 
     public LLLocation() {}
 
     public LLLocation(Location l)
     {
-        this.timestamp = System.currentTimeMillis();
+        super(System.currentTimeMillis());
         this.latitude  = l.getLatitude();
         this.longitude = l.getLongitude();
     }
 
     public LLLocation(double lat, double longi)
     {
-        this.timestamp = System.currentTimeMillis();
+        super(System.currentTimeMillis());
         this.latitude  = lat;
         this.longitude = longi;
     }
@@ -43,16 +42,10 @@ public class LLLocation extends SugarRecord implements ListItemInterface
 
     public String getDisplayName(Context context)
     {
-        return "Date: " + this.getReadableDate(this.timestamp);
+        return "Date: " + this.getReadableDate(this.getTimestamp());
     }
 
-    public String getReadableDate(long timestamp)
-    {
-        DateFormat.getInstance().format(timestamp);
-        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd,yyyy - (HH:mm)");
-        Date resultdate = new Date(timestamp);
-        return sdf.format(resultdate);
-    }
+
 
     public double getLatitude()
     {

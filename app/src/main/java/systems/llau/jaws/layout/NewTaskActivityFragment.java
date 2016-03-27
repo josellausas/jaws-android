@@ -1,10 +1,10 @@
-package systems.llau.jaws;
+package systems.llau.jaws.layout;
 
 import android.content.DialogInterface;
-import android.support.annotation.Nullable;
+import android.net.ParseException;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,7 +17,13 @@ import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import com.wdullaer.materialdatetimepicker.time.RadialPickerLayout;
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
+import java.util.Date;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+
+import systems.llau.jaws.LLau.LLTask;
+import systems.llau.jaws.NewTaskActivity;
+import systems.llau.jaws.R;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -46,22 +52,16 @@ public class NewTaskActivityFragment extends Fragment implements DatePickerDialo
 
         // Load the view elements to handle
         titleEditText = (EditText)rootView.findViewById(R.id.titleEditText);
-
         // The date
         dateEditText = (EditText)rootView.findViewById(R.id.dateEditText);
-
         // Notes
         notesEditText = (EditText)rootView.findViewById(R.id.notesEditText);
-
         // The create button
         createButton = (Button)rootView.findViewById(R.id.createButton);
-
         datePickButton = (Button)rootView.findViewById(R.id.datePickButton);
-
         datePickButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(final View v) {
                 Calendar now = Calendar.getInstance();
                 DatePickerDialog dialog = DatePickerDialog.newInstance(
                         NewTaskActivityFragment.this,
@@ -70,15 +70,46 @@ public class NewTaskActivityFragment extends Fragment implements DatePickerDialo
                         now.get(Calendar.DAY_OF_MONTH)
                 );
 
-                dialog.setOnCancelListener(new DialogInterface.OnCancelListener()
-                {
+                dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                     @Override
                     public void onCancel(DialogInterface dialog) {
                         Log.d("Dg", "Dialog was cancelled");
+                        Snackbar.make(v, "Canceled", Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
                     }
                 });
 
                 dialog.show(getActivity().getFragmentManager(), "datePicker");
+            }
+        });
+
+        createButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                // Check all the data
+                String t = NewTaskActivityFragment.this.titleEditText.getText().toString();
+                String d = NewTaskActivityFragment.this.dateEditText.getText().toString();
+                String n = NewTaskActivityFragment.this.notesEditText.getText().toString();
+
+                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+
+                try {
+
+                    Date date = formatter.parse(d);
+                    System.out.println(date);
+                    System.out.println(formatter.format(date));
+                    tryToCreate(t, date, n);
+
+                }
+                catch (java.text.ParseException e)
+                {
+                    e.printStackTrace();
+                    // Bad bad bad
+                    Snackbar.make(v, "Bad date", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                }
             }
         });
 
@@ -88,6 +119,38 @@ public class NewTaskActivityFragment extends Fragment implements DatePickerDialo
 
         return rootView;
     }
+
+
+    private void tryToCreate(String title, Date date, String notes)
+    {
+        if(title == null || date == null || notes == null)
+        {
+            Snackbar.make(this.getView(), "Bad data", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+            // This is bad
+            return;
+        }
+
+        if(title.equals("") || date.equals("") || notes.equals(""))
+        {
+            Snackbar.make(this.getView(), "Bad Data", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+            // No bueno
+            return;
+        }
+
+        LLTask createdTask = new LLTask(title, date, notes);
+
+        Snackbar.make(this.getView(), "Created Success", Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show();
+
+        createdTask.save();
+
+        getActivity().onBackPressed();
+
+    }
+
+
     @Override
     public void onTimeSet(RadialPickerLayout view, int hourOfDay, int minute, int secs) {
         String time = "You picked the following time: "+hourOfDay+"h"+minute;

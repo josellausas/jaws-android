@@ -30,10 +30,12 @@ import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
 import cz.msebera.android.httpclient.entity.StringEntity;
+import systems.llau.jaws.Base.AppManager;
 import systems.llau.jaws.LLau.LLTask;
 import systems.llau.jaws.MainActivity;
 import systems.llau.jaws.NewTaskActivity;
 import systems.llau.jaws.R;
+import systems.llau.jaws.taskViewActivity;
 
 /**
  * Created by pp on 12/31/15.
@@ -63,36 +65,41 @@ public class TaskListFragment extends ListFragment
             @Override
             public void onClick(View view) {
                 Intent createNewTaskIntent = new Intent(getActivity(), NewTaskActivity.class);
-                // Use TaskStackBuilder to build the back stack and get the PendingIntent
-                PendingIntent pendingIntent =
-                        TaskStackBuilder.create(getActivity())
-                                // add all of DetailsActivity's parents to the stack,
-                                // followed by DetailsActivity itself
-                                .addNextIntentWithParentStack(createNewTaskIntent)
-                                .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                NotificationCompat.Builder builder = new NotificationCompat.Builder(getActivity());
-                builder.setContentIntent(pendingIntent);
-
-                // Set the fragment we were last on:
-                MainActivity activity = (MainActivity)getActivity();
-
-                activity.setPreviousFragmentActive(getMyself());
-
-
-                try
-                {
-                    pendingIntent.send(getActivity(), 0, createNewTaskIntent);
-                }
-                catch (PendingIntent.CanceledException e)
-                {
-                    e.printStackTrace();
-                }
-//                startActivity(createNewTaskIntent);
+                pushActivity(createNewTaskIntent);
             }
         });
 
         return rootView;
+    }
+
+    private void pushActivity(Intent intent)
+    {
+        Intent createNewTaskIntent = intent;
+        // Use TaskStackBuilder to build the back stack and get the PendingIntent
+        PendingIntent pendingIntent =
+                TaskStackBuilder.create(getActivity())
+                        // add all of DetailsActivity's parents to the stack,
+                        // followed by DetailsActivity itself
+                        .addNextIntentWithParentStack(createNewTaskIntent)
+                        .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(getActivity());
+        builder.setContentIntent(pendingIntent);
+
+        // Set the fragment we were last on:
+        MainActivity activity = (MainActivity)getActivity();
+
+        activity.setPreviousFragmentActive(getMyself());
+
+
+        try
+        {
+            pendingIntent.send(getActivity(), 0, createNewTaskIntent);
+        }
+        catch (PendingIntent.CanceledException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     private void setupAdapter()
@@ -164,6 +171,18 @@ public class TaskListFragment extends ListFragment
     @Override
     public void onListItemClick(ListView l, View v, int position, long id)
     {
+        LLTask taskSelected = (LLTask)taskItemList.get(position);
+
+        // Show the thing selected
+//        taskViewActivity viewActivity = new taskViewActivity();
+//        viewActivity.setTask(taskSelected);
+
+        AppManager app = AppManager.getInstance();
+        app.setSelectedTask(taskSelected);
+
+        Intent intent = new Intent(getActivity(), taskViewActivity.class);
+
+        pushActivity(intent);
 
     }
 

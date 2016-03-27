@@ -341,13 +341,16 @@ public class MainActivity extends AppCompatActivity
         {
             if(lastClass.equals(TaskListFragment.class.toString()))
             {
+                setTitle("Task List");
                 this.previosFragmentActive = new TaskListFragment();
             }
+
 
         }
 
         if(this.previosFragmentActive != null)
         {
+
             showFragmentNow(previosFragmentActive);
         }
         else
