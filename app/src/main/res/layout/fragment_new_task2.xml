@@ -25,14 +25,28 @@
                 android:layout_marginTop="24dp"
                 android:hint="Title" />
 
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:inputType="date"
-                android:ems="10"
-                android:id="@+id/dateEditText"
-                android:layout_marginTop="12dp"
-                android:hint="Date" />
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <EditText
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:inputType="date"
+                    android:ems="10"
+                    android:id="@+id/dateEditText"
+                    android:layout_marginTop="12dp"
+                    android:hint="Date" />
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pick Date"
+                    android:id="@+id/datePickButton"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_toEndOf="@+id/dateEditText" />
+            </RelativeLayout>
 
             <EditText
                 android:layout_width="match_parent"
