@@ -1,10 +1,14 @@
 package systems.llau.jaws.layout;
 
 import android.app.ListFragment;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.NotificationCompat;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,6 +31,8 @@ import java.util.List;
 import cz.msebera.android.httpclient.Header;
 import cz.msebera.android.httpclient.entity.StringEntity;
 import systems.llau.jaws.LLau.LLTask;
+import systems.llau.jaws.MainActivity;
+import systems.llau.jaws.NewTaskActivity;
 import systems.llau.jaws.R;
 
 /**
@@ -37,6 +43,8 @@ public class TaskListFragment extends ListFragment
     private List<ListItemInterface> taskItemList = null;
     private ListItemAdapter adapter = null;
     private ListView listView = null;
+
+    private TaskListFragment getMyself(){return this;}
 
     @Nullable @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstancec)
@@ -50,17 +58,37 @@ public class TaskListFragment extends ListFragment
 
         // Create a Fab
         // The action button
-        FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
+        final FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                NewTaskFragment nextFrag= new NewTaskFragment();
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.containerthing, nextFrag,"systems.llau.tagf" )
-                        .addToBackStack(null)
-                        .commit();
-//                Snackbar.make(view, "Create task goes here", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
+                Intent createNewTaskIntent = new Intent(getActivity(), NewTaskActivity.class);
+                // Use TaskStackBuilder to build the back stack and get the PendingIntent
+                PendingIntent pendingIntent =
+                        TaskStackBuilder.create(getActivity())
+                                // add all of DetailsActivity's parents to the stack,
+                                // followed by DetailsActivity itself
+                                .addNextIntentWithParentStack(createNewTaskIntent)
+                                .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(getActivity());
+                builder.setContentIntent(pendingIntent);
+
+                // Set the fragment we were last on:
+                MainActivity activity = (MainActivity)getActivity();
+
+                activity.setPreviousFragmentActive(getMyself());
+
+
+                try
+                {
+                    pendingIntent.send(getActivity(), 0, createNewTaskIntent);
+                }
+                catch (PendingIntent.CanceledException e)
+                {
+                    e.printStackTrace();
+                }
+//                startActivity(createNewTaskIntent);
             }
         });
 

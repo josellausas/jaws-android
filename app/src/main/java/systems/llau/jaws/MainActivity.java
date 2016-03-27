@@ -53,6 +53,7 @@ class MyMQTTMessage
     public String channel;
     public JSONObject payload;
 
+
     public MyMQTTMessage(String c, JSONObject o)
     {
         this.channel = c;
@@ -64,13 +65,16 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener
 {
 
-    private MqttAsyncClient    mqtt     = null;
-    private MqttConnectOptions options  = null;
-    private ArrayList<MyMQTTMessage> failedMessages = null;
-    private String identifier = null;
+    private MqttAsyncClient          mqtt                   = null;
+    private MqttConnectOptions       options                = null;
+    private ArrayList<MyMQTTMessage> failedMessages         = null;
+    private String                   identifier             = null;
+    private Fragment                 previosFragmentActive  = null;
+    private GoogleApiClient          apiClient              = null;
+    private Location                 lastLocation           = null;
 
-    private GoogleApiClient apiClient = null;
-    private Location lastLocation = null;
+
+    public void setPreviousFragmentActive(Fragment f){this.previosFragmentActive = f;}
 
     private void notifyServer(int severity, String msg)
     {
@@ -227,19 +231,15 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
 
-        // This is the default fragment to show:
-        DashboardFragment dashboardFragment = new DashboardFragment();
-        showFragmentNow(dashboardFragment);
-
-        if(savedInstanceState == null)
+        if(this.previosFragmentActive != null)
         {
-            SharedPreferences settings = getSharedPreferences("JawsPreferences", 0);
-            boolean isInstalled = settings.getBoolean("installed", false);
-            if(isInstalled)
-            {
-                // Install the thing
-                installApp();
-            }
+            showFragmentNow(previosFragmentActive);
+        }
+        else
+        {
+            // This is the default fragment to show:
+            DashboardFragment dashboardFragment = new DashboardFragment();
+            showFragmentNow(dashboardFragment);
         }
 
         // Setup google services
@@ -252,6 +252,22 @@ public class MainActivity extends AppCompatActivity
                     .addOnConnectionFailedListener(this)
                     .build();
         }
+
+
+
+        if(savedInstanceState == null)
+        {
+            SharedPreferences settings = getSharedPreferences("JawsPreferences", 0);
+            boolean isInstalled = settings.getBoolean("installed", false);
+            if(isInstalled)
+            {
+                // Install the thing
+                installApp();
+            }
+
+        }
+
+
 
 
 
@@ -317,11 +333,37 @@ public class MainActivity extends AppCompatActivity
     {
         apiClient.connect();
         super.onStart();
+
+        SharedPreferences settings = getSharedPreferences("JawsPreferences", 0);
+        String lastClass = settings.getString("lastFragment", null);
+
+        if(lastClass != null)
+        {
+            if(lastClass.equals(TaskListFragment.class.toString()))
+            {
+                this.previosFragmentActive = new TaskListFragment();
+            }
+
+        }
+
+        if(this.previosFragmentActive != null)
+        {
+            showFragmentNow(previosFragmentActive);
+        }
+        else
+        {
+            // This is the default fragment to show:
+            DashboardFragment dashboardFragment = new DashboardFragment();
+            showFragmentNow(dashboardFragment);
+        }
+
+
     }
 
     @Override
     public void onStop()
     {
+        Fragment f = this.previosFragmentActive;
         apiClient.disconnect();
         super.onStop();
     }
@@ -335,6 +377,24 @@ public class MainActivity extends AppCompatActivity
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        if(this.previosFragmentActive != null)
+        {
+            SharedPreferences settings = getSharedPreferences("JawsPreferences", 0);
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putString("lastFragment", previosFragmentActive.getClass().toString());
+
+            // Commit the edits!
+            editor.commit();
+            Log.e("SAVE", "Saving this string: " + previosFragmentActive.getClass().toString());
+        }
+
+
+        super.onDestroy();
     }
 
 
@@ -505,6 +565,9 @@ public class MainActivity extends AppCompatActivity
     {
 
     }
+
+
+
 
 
 }
