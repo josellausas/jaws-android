@@ -16,11 +16,21 @@ import systems.llau.jaws.layout.ListItemInterface;
  */
 public class LLLocation extends LLLogable implements ListItemInterface
 {
-    double latitude;        /// Latitude
-    double longitude;       /// Longitude
+    double latitude;        /** Latitude */
+    double longitude;       /** Longitude */
 
+    /**
+     * Default Constructor
+     */
     public LLLocation() {}
 
+    /**
+    *   LLLocation()
+    *
+    *   @brief Constructs a new location with a location object
+    *   @param l The location object
+    *
+     */
     public LLLocation(Location l)
     {
         super(System.currentTimeMillis());
@@ -28,6 +38,14 @@ public class LLLocation extends LLLogable implements ListItemInterface
         this.longitude = l.getLongitude();
     }
 
+    /**
+    * LLLocation()
+    *
+    * @brief Constructs a new location with a latitude and a longitude
+    * @param lat Latitude coordinate
+    * @param longi Longitude coordinate
+    *
+    */
     public LLLocation(double lat, double longi)
     {
         super(System.currentTimeMillis());
@@ -35,23 +53,42 @@ public class LLLocation extends LLLogable implements ListItemInterface
         this.longitude = longi;
     }
 
+    /**
+     * getAll()
+     * @brief Retuns a list of all the locations
+     * @function getAll()
+     * @return A list of all the locations
+     */
     public List<LLLocation> getAll()
     {
         return LLLocation.listAll(LLLocation.class);
     }
 
+    /**
+     * GetDisplayName()
+     *
+     * @brief Retuns the name to display inside a listView
+     * @param context The app's context
+     * @return A string that represents this object that is localized
+     */
     public String getDisplayName(Context context)
     {
         return "Date: " + this.getReadableDate(this.getTimestamp());
     }
 
-
-
+    /**
+     * @brief Returns the lattidude
+     * @return The lattiude for this location
+     */
     public double getLatitude()
     {
         return this.latitude;
     }
 
+    /**
+     * @function getLongitude()
+     * @return The longitude
+     */
     public double getLongitude()
     {
         return this.longitude;

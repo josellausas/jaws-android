@@ -61,10 +61,12 @@ class MyMQTTMessage
     }
 }
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener
+public class MainActivity extends AppCompatActivity implements
+        NavigationView.OnNavigationItemSelectedListener,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener
 {
-
+    // Them private members
     private MqttAsyncClient          mqtt                   = null;
     private MqttConnectOptions       options                = null;
     private ArrayList<MyMQTTMessage> failedMessages         = null;
@@ -73,9 +75,10 @@ public class MainActivity extends AppCompatActivity
     private GoogleApiClient          apiClient              = null;
     private Location                 lastLocation           = null;
 
-
+    // Sets the previous arguments
     public void setPreviousFragmentActive(Fragment f){this.previosFragmentActive = f;}
 
+    // Sends a message to the server
     private void notifyServer(int severity, String msg)
     {
         if(identifier == null)
@@ -84,18 +87,21 @@ public class MainActivity extends AppCompatActivity
             TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
             identifier = telephonyManager.getSubscriberId();
         }
+
+        // Creates a new notification
         LLNotification note = new LLNotification(severity, msg, identifier);
+
         // Publish as a json string
         this.publishMessage("notify/device", note.toJSON());
     }
 
 
+    /// Publishes a message to MQTT
     private void publishMessage(final String channel, final JSONObject msg)
     {
-
-        Log.i("Main", "Publishing " + msg);
         try
         {
+            // Create an mqtt
             if(mqtt == null)
             {
                 Log.i("Main", "Creating mqtt ");
@@ -113,8 +119,7 @@ public class MainActivity extends AppCompatActivity
                 options.setWill("v1/status/androidDevice", lastWillMessage.getBytes(), 1, true);
             }
 
-
-
+            // Check if its connected
             if(mqtt.isConnected() == false)
             {
                 Log.i("Main", "Connecting mqtt ");
@@ -192,6 +197,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /// Callback for when the message has failed
     private void messageHasFailed(String chan,JSONObject msg)
     {
         // Creates a message instance and adds it to the failed message list
@@ -199,9 +205,10 @@ public class MainActivity extends AppCompatActivity
         this.failedMessages.add(failedOne);
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState)
+
+    @Override protected void onCreate(Bundle savedInstanceState)
     {
+        // Do the thing
         super.onCreate(savedInstanceState);
 
         // Initialize the Joda time
@@ -210,8 +217,6 @@ public class MainActivity extends AppCompatActivity
         // Start with a clean failed messages list
         this.failedMessages = new ArrayList<MyMQTTMessage>();
 
-        // TODO: Load from disk the last failed messages
-
         // Inflate the view.
         setContentView(R.layout.activity_main);
 
@@ -219,12 +224,16 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
         // Activity drawer
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this, drawer, toolbar,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close);
+
         drawer.setDrawerListener(toggle);
+
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -253,8 +262,6 @@ public class MainActivity extends AppCompatActivity
                     .build();
         }
 
-
-
         if(savedInstanceState == null)
         {
             SharedPreferences settings = getSharedPreferences("JawsPreferences", 0);
@@ -264,26 +271,18 @@ public class MainActivity extends AppCompatActivity
                 // Install the thing
                 installApp();
             }
-
         }
-
-
-
-
-
-
     }
 
     private void installApp()
     {
         // Get the information from the telephone and register it with MQTT
         TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
-        String imsi = telephonyManager.getSubscriberId();
+        String imsi     = telephonyManager.getSubscriberId();
         String deviceId = telephonyManager.getDeviceId();
-        String version = telephonyManager.getDeviceSoftwareVersion();
+        String version  = telephonyManager.getDeviceSoftwareVersion();
         String operator = telephonyManager.getNetworkOperatorName();
-        String number = telephonyManager.getLine1Number();
-
+        String number   = telephonyManager.getLine1Number();
 
         JSONObject json = new JSONObject();
 
@@ -509,16 +508,16 @@ public class MainActivity extends AppCompatActivity
     private boolean checkPlayServices()
     {
         int result = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-
         return true;
     }
 
     @Override
     public void onConnectionSuspended(int error)
     {
-
+        // The connection got suspended
     }
 
+    /// Gets the last known location
     public Location getLastLocation()
     {
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
@@ -559,18 +558,11 @@ public class MainActivity extends AppCompatActivity
     public void onConnected(Bundle bundle)
     {
         Log.e("TAG", "Hola");
-
         Location uno = this.getLastLocation();
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult result)
     {
-
     }
-
-
-
-
-
 }

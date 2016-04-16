@@ -39,12 +39,16 @@ import com.crashlytics.android.Crashlytics;
 import io.fabric.sdk.android.Fabric;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.LoginEvent;
 import com.loopj.android.http.*;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import cz.msebera.android.httpclient.Header;
+import io.fabric.sdk.android.services.common.Crash;
 import systems.llau.jaws.LLau.LLSyncManager;
 
 import static android.Manifest.permission.READ_CONTACTS;
@@ -54,7 +58,6 @@ import static android.Manifest.permission.READ_CONTACTS;
  */
 public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor>
 {
-
     /**
      * Id to identity READ_CONTACTS permission request.
      */
@@ -382,7 +385,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         // Requests the tasks from the server
         AsyncHttpClient client = new AsyncHttpClient();
 
-        client.setBasicAuth(username,password);
+        
+
+//        client.setBasicAuth(username,password);
         client.get("http://llau.systems/users", new JsonHttpResponseHandler()
         {
             @Override
@@ -395,6 +400,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 LLSyncManager.getInstance().init(username);
 
                 boolean success = LLSyncManager.getInstance().syncUsers(response);
+
+
+                LoginEvent e = new LoginEvent();
+                e.putSuccess(true);
+                Answers.getInstance().logLogin(e);
 
                 // Show the drawer activity
                 if(success == true)
@@ -413,30 +423,39 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
 
             @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse)
+            {
+                Crashlytics.getInstance().logException(throwable);
 
                 showProgress(false);
 
                 Log.e("HTTP", "Error: " + statusCode);
-
+                throwable.printStackTrace();
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
             }
 
             @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse)
+            {
 
+                Crashlytics.getInstance().logException(throwable);
                 showProgress(false);
 
+                Log.e("HTTP", "Error: " + statusCode);
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
+                throwable.printStackTrace();
             }
 
             @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-
+            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable)
+            {
+                Crashlytics.getInstance().logException(throwable);
                 showProgress(false);
 
+                Log.e("HTTP", "Error: " + statusCode);
+                throwable.printStackTrace();
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
             }

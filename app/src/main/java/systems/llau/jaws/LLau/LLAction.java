@@ -5,6 +5,9 @@ package systems.llau.jaws.LLau;
  */
 public interface LLAction
 {
+    /**
+     * The types of actions
+     */
     public enum LLActionType
     {
         LL_ACTION_ABSTRACT,
@@ -12,7 +15,11 @@ public interface LLAction
 
     public LLActionType getType();
 
-    // Starts the action on the target
+    /**
+     * Mark the beggining of an action perfomed on a target.
+     * @param target The receiver of the action
+     * @return An initialized Outcome to keep track of the progress
+     */
     public LLOutcome start(LLTarget target);
 
 }

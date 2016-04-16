@@ -27,23 +27,39 @@ import java.util.ArrayList;
 import systems.llau.jaws.R;
 
 /**
+ * @class DashboardFragment
+ * @brief Shows the Dashboard for the app
  * Created by pp on 12/30/15.
  */
 public class DashboardFragment extends Fragment implements
         OnChartValueSelectedListener
 {
-    private PieChart pieChart;          /// A dashboard chart
-    private Typeface tf;
+    private PieChart pieChart;      /** A chart */
+    private Typeface tf;            /** Our font */
 
+    /**
+     * Entry point for the Fragment
+     * @param inflater  The layout inflater
+     * @param container The parent cointainer
+     * @param savedInstane  The bundle instance
+     * @return  The rootview already inflated
+     */
     @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstane)
     {
+        // Inflate the view
         View rootView = inflater.inflate(R.layout.fragment_dashboard, container, false);
+
+        // Setup the chart
         setupChart(rootView);
 
+        // Return the inflated view
         return rootView;
-
     }
 
+    /**
+     * Creates a test chart
+     * @param rootView The parent view
+     */
     private void testChart(View rootView)
     {
         // Init the pie chart
@@ -88,6 +104,10 @@ public class DashboardFragment extends Fragment implements
         l.setYOffset(0f);
     }
 
+    /**
+     * Setup the dashboard chart
+     * @param rootView The parent rootview
+     */
     private void setupChart(View rootView)
     {
         // Init the pie chart
@@ -135,6 +155,11 @@ public class DashboardFragment extends Fragment implements
         l.setYOffset(0f);
     }
 
+    /**
+     * Sets the data for the chart
+     * @param count Count of sample data
+     * @param range The range of randomness
+     */
     private void setData(int count, float range)
     {
         float mult = range;
@@ -196,8 +221,13 @@ public class DashboardFragment extends Fragment implements
         pieChart.invalidate();
     }
 
-    @Override
-    public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
+    /**
+     * Reacts to a chart value selection
+     * @param e Entry point
+     * @param dataSetIndex The index selected
+     * @param h Highlight
+     */
+    @Override public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
 
         if (e == null)
             return;
@@ -206,8 +236,10 @@ public class DashboardFragment extends Fragment implements
                         + ", DataSet index: " + dataSetIndex);
     }
 
-    @Override
-    public void onNothingSelected() {
+    /**
+     * React to a nothing touch on the chart
+     */
+    @Override public void onNothingSelected() {
         Log.i("PieChart", "nothing selected");
     }
 }
