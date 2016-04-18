@@ -36,7 +36,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
+
+import cz.msebera.android.httpclient.Header;
 import io.fabric.sdk.android.Fabric;
+
+import java.net.URLEncoder;
+import java.security.KeyManagementException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +56,13 @@ import com.loopj.android.http.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import cz.msebera.android.httpclient.Header;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
+
 import io.fabric.sdk.android.services.common.Crash;
 import systems.llau.jaws.LLau.LLSyncManager;
 
@@ -62,14 +77,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Id to identity READ_CONTACTS permission request.
      */
     private static final int REQUEST_READ_CONTACTS = 0;
-
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "jose@josellausas.com:polo&xzaz"
-    };
 
 
     // UI references.
@@ -97,6 +104,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
 
+    /**
+     * Setup the user's graphic interface
+     */
     private void setupUI()
     {
         // Set up the login form.
@@ -104,10 +114,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         // Setup the UI
         mPasswordView = (EditText) findViewById(R.id.password);
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener()
+        {
             // Handles the action for password
             @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent)
+            {
                 if (id == R.id.login || id == EditorInfo.IME_NULL) {
                     attemptLogin();
                     return true;
@@ -118,9 +130,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         // Sets up the login butto0n
         Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
+        mEmailSignInButton.setOnClickListener(new OnClickListener()
+        {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view)
+            {
                 attemptLogin();
             }
         });
@@ -130,19 +144,23 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     }
 
+    /**
+     * Checks for previously saved user and password and complets the infor in the GUI
+     */
     private void populateAutoComplete()
     {
         if (!mayRequestContacts())
         {
+            Crashlytics.getInstance().log("No permission to request contacts");
+            Crashlytics.getInstance().crash();
             return;
         }
 
         getLoaderManager().initLoader(0, null, this);
 
+        // Load from prefs
         SharedPreferences settings = getSharedPreferences("JawsPreferences", 0);
-
-
-        String usr =settings.getString("username", null);
+        String usr =settings.getString("username", null);   // Gets the user string
         if(usr != null)
         {
             String password = settings.getString("password", null);
@@ -154,6 +172,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     }
 
+    /**
+     * Save valid credentials to use later
+     * @param username User's name
+     * @param password User's password
+     */
     private void saveCredentials(String username, String password)
     {
         SharedPreferences settings = getSharedPreferences("JawsPreferences", 0);
@@ -169,6 +192,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         editor.commit();
     }
 
+    /**
+     * Checks if we have permission to request contacts
+     * @return True if permission is good
+     */
     private boolean mayRequestContacts()
     {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
@@ -228,7 +255,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
-        String email = mEmailView.getText().toString();
+        String email    = mEmailView.getText().toString();
         String password = mPasswordView.getText().toString();
 
         boolean cancel = false;
@@ -373,27 +400,91 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         int IS_PRIMARY = 1;
     }
 
-
-
+    /**
+     * It's good to know yourself
+     * @return Yourself
+     */
     private LoginActivity getMyself()
     {
         return this;
     }
 
+    /**
+     * Hashes the password
+     * @param pass The password to hash
+     * @return The hash or null
+     */
+    private String hashPass(String pass)
+    {
+        try
+        {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            md.update(pass.getBytes());
+            byte[] bytes = md.digest();
+            StringBuffer buffer = new StringBuffer();
+            for (int i = 0; i < bytes.length; i++)
+            {
+                // Convert to hexthing
+                String tmp = Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1);
+                buffer.append(tmp);
+            }
+            return buffer.toString();
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Attempts login
+     * @param username Username
+     * @param password Password
+     */
     private void getPermissionFromServer(final String username, final String password)
     {
+        // This is the server's URL
+        String loginURL = "https://www.llau.systems/api/users";
+
         // Requests the tasks from the server
-        AsyncHttpClient client = new AsyncHttpClient();
+        // WARNING: This bypasses SSL certificate checking
+        AsyncHttpClient client = new AsyncHttpClient(true, 80, 443); // TODO: Remove this in production
+        RequestParams   params = new RequestParams();
 
-        
+        try
+        {
+            // Convert to base64
+            // Sending side
+            byte[] userData = username.getBytes("UTF-8");
+            String base64username = Base64.encodeToString(userData, Base64.DEFAULT);
 
-//        client.setBasicAuth(username,password);
-        client.get("http://llau.systems/users", new JsonHttpResponseHandler()
+            byte[] passData = hashPass(password).getBytes("UTF-8");
+            String base64Pass = Base64.encodeToString(passData, Base64.DEFAULT);
+
+            // Receiving side
+            //byte[] data = Base64.decode(base64, Base64.DEFAULT);
+            //String text = new String(data, "UTF-8");
+
+            // Encode the strings
+            String encodedUser = URLEncoder.encode(base64username);
+            params.add("user", encodedUser);
+
+            // Encode the strings
+            String encodedPass = URLEncoder.encode(base64Pass , "utf-8");
+            params.add("pass", encodedPass);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return;
+        }
+
+
+        client.post(getApplicationContext(), loginURL, params, new JsonHttpResponseHandler()
         {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONArray response)
             {
-
                 showProgress(false);
 
                 // Needed for everything to work:
@@ -407,17 +498,14 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 Answers.getInstance().logLogin(e);
 
                 // Show the drawer activity
-                if(success == true)
-                {
+                if (success == true) {
                     // App success behavior
                     saveCredentials(username, password);
 
                     Toast.makeText(getMyself(), "Login OK!", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                     startActivity(intent);
-                }
-                else
-                {
+                } else {
                     Toast.makeText(getApplicationContext(), "Failed Initial Sync! Please retry", Toast.LENGTH_SHORT).show();
                 }
             }

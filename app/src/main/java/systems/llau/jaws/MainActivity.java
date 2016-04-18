@@ -48,47 +48,89 @@ import systems.llau.jaws.layout.TaskListFragment;
 import systems.llau.jaws.layout.UserListFragment;
 import java.util.ArrayList;
 
+/**
+ * MyMQTTMessage
+ * =============
+ * Abtracts a MQTT message.
+ * It encrypts and encodes the message so it is ready to go over the internet.
+ *
+ */
 class MyMQTTMessage
 {
-    public String channel;
-    public JSONObject payload;
+    public String     channel;      /** The Channel where the messages get published */
+    public JSONObject payload;      /** The message payload that gets encrypted */
 
-
-    public MyMQTTMessage(String c, JSONObject o)
+    /**
+     * Custom Constructor
+     * ------------------
+     * Creates a new MQTT message to be delivered to the default channel
+     *
+     * @param channel The channel to send to
+     * @param object The JSON object to send to the server
+     */
+    public MyMQTTMessage(String channel, JSONObject object)
     {
-        this.channel = c;
-        this.payload = o;
+        this.channel = channel;
+        this.payload = object;
     }
 }
 
+/**
+ * MainActivity
+ * ============
+ * The app's main activity.
+ * Implements a GoogleApiClient
+ * Implements a NavigationView
+ */
 public class MainActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener
 {
-    // Them private members
+
+    /** The mqtt clien */
     private MqttAsyncClient          mqtt                   = null;
+    /** The mqtt connect options */
     private MqttConnectOptions       options                = null;
+    /** Stores the failed messages */
     private ArrayList<MyMQTTMessage> failedMessages         = null;
+    /** Identifies our client to the server */
     private String                   identifier             = null;
-    private Fragment                 previosFragmentActive  = null;
+    /** The google API Client */
     private GoogleApiClient          apiClient              = null;
+    /** The last known GPS location */
     private Location                 lastLocation           = null;
 
-    // Sets the previous arguments
+    /** Keeps track of the last fragment that was active */
+    private Fragment previosFragmentActive  = null;
     public void setPreviousFragmentActive(Fragment f){this.previosFragmentActive = f;}
 
-    // Sends a message to the server
+
+    /**
+     * Gets the phone's unique identifier and returns it.
+     * @return The phone's unique identifier
+     */
+    private String getPhoneIdentifier()
+    {
+        TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
+        return telephonyManager.getDeviceId();
+    }
+
+
+    /**
+     * Sends a message to the server.
+     * @param severity The level of importance of the message
+     * @param msg   The message payload to send
+     */
     private void notifyServer(int severity, String msg)
     {
         if(identifier == null)
         {
             // Get the information from the telephone and register it with MQTT
-            TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
-            identifier = telephonyManager.getSubscriberId();
+            identifier = getPhoneIdentifier();
         }
 
-        // Creates a new notification
+        // Creates a new notification to be sent
         LLNotification note = new LLNotification(severity, msg, identifier);
 
         // Publish as a json string

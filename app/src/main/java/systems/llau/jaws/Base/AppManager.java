@@ -1,5 +1,4 @@
 package systems.llau.jaws.Base;
-
 import systems.llau.jaws.LLau.LLTask;
 
 /**
@@ -27,6 +26,7 @@ public class AppManager
      */
     private AppManager()
     {
+        // Default constructor
     }
 
     /**

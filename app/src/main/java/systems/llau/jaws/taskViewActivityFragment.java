@@ -18,8 +18,8 @@ import systems.llau.jaws.LLau.LLTask;
 public class taskViewActivityFragment extends Fragment
 {
     private TextView titleLabel = null;
-    private TextView dateLabel = null;
-    private TextView noteLabel = null;
+    private TextView dateLabel  = null;
+    private TextView noteLabel  = null;
 
     private LLTask selectedTask= null;
 
