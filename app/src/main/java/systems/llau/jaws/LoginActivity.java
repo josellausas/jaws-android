@@ -11,13 +11,10 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
-
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
-
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -34,38 +31,19 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.crashlytics.android.Crashlytics;
-
 import cz.msebera.android.httpclient.Header;
 import io.fabric.sdk.android.Fabric;
-
 import java.net.URLEncoder;
-import java.security.KeyManagementException;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
-
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.LoginEvent;
 import com.loopj.android.http.*;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
-
-import io.fabric.sdk.android.services.common.Crash;
 import systems.llau.jaws.LLau.LLSyncManager;
-
 import static android.Manifest.permission.READ_CONTACTS;
 
 /**
@@ -78,12 +56,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      */
     private static final int REQUEST_READ_CONTACTS = 0;
 
-
     // UI references.
     private AutoCompleteTextView mEmailView;
-    private EditText mPasswordView;
-    private View mProgressView;
-    private View mLoginFormView;
+    private EditText             mPasswordView;
+    private View                 mProgressView;
+    private View                 mLoginFormView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -262,7 +239,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+        if (!TextUtils.isEmpty(password) && !isPasswordValid(password))
+        {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
@@ -305,40 +283,51 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         return email.contains("@");
     }
 
-    private boolean isPasswordValid(String password) {
+    private boolean isPasswordValid(String password)
+    {
         //TODO: Replace this with your own logic
         return password.length() > 4;
+
+        // TODO: Check for evilness here
     }
 
     /**
      * Shows the progress UI and hides the login form.
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    private void showProgress(final boolean show) {
+    private void showProgress(final boolean show)
+    {
         // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
         // for very easy animations. If available, use these APIs to fade-in
         // the progress spinner.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2)
+        {
             int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
             mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
             mLoginFormView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+                    show ? 0 : 1).setListener(new AnimatorListenerAdapter()
+            {
                 @Override
-                public void onAnimationEnd(Animator animation) {
+                public void onAnimationEnd(Animator animation)
+                {
                     mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
                 }
             });
 
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
             mProgressView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter()
+            {
                 @Override
-                public void onAnimationEnd(Animator animation) {
+                public void onAnimationEnd(Animator animation)
+                {
                     mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
                 }
             });
-        } else {
+        }
+        else
+        {
             // The ViewPropertyAnimator APIs are not available, so simply show
             // and hide the relevant UI components.
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
@@ -364,7 +353,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor)
+    {
         List<String> emails = new ArrayList<>();
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
@@ -376,11 +366,17 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> cursorLoader) {
-
+    public void onLoaderReset(Loader<Cursor> cursorLoader)
+    {
+        // What is this for?
     }
 
-    private void addEmailsToAutoComplete(List<String> emailAddressCollection) {
+    /**
+     * Adds an email to the autocomplete list
+     * @param emailAddressCollection The email to be added
+     */
+    private void addEmailsToAutoComplete(List<String> emailAddressCollection)
+    {
         //Create adapter to tell the AutoCompleteTextView what to show in its dropdown list.
         ArrayAdapter<String> adapter =
                 new ArrayAdapter<>(LoginActivity.this,
@@ -409,8 +405,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         return this;
     }
 
+
     /**
-     * Hashes the password
+     * Hashes the password with Sha256
      * @param pass The password to hash
      * @return The hash or null
      */
@@ -438,32 +435,34 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     /**
      * Attempts login
-     * @param username Username
-     * @param password Password
+     * Converts the username to a URLEncode(base64(x)) string
+     * Converts the password to a URLEncode(base64(sha256(y))) string
+     * This is the last step where the password is naked
+     * @param username Username as input by the user
+     * @param password Password as input by the user
      */
     private void getPermissionFromServer(final String username, final String password)
     {
         // This is the server's URL
-        String loginURL = "https://www.llau.systems/api/users";
+        String loginURL = getString(R.string.url_login);
 
+        //----------------------------------------------
         // Requests the tasks from the server
         // WARNING: This bypasses SSL certificate checking
-        AsyncHttpClient client = new AsyncHttpClient(true, 80, 443); // TODO: Remove this in production
-        RequestParams   params = new RequestParams();
+        // TODO: Remove this in production UNSAFE as fuck!
+        AsyncHttpClient client = new AsyncHttpClient(true, 80, 443);
 
+        RequestParams   params = new RequestParams();
         try
         {
-            // Convert to base64
-            // Sending side
+            // Convert to base64 the username
             byte[] userData = username.getBytes("UTF-8");
             String base64username = Base64.encodeToString(userData, Base64.DEFAULT);
 
+            // Hash and base64 the password
             byte[] passData = hashPass(password).getBytes("UTF-8");
             String base64Pass = Base64.encodeToString(passData, Base64.DEFAULT);
 
-            // Receiving side
-            //byte[] data = Base64.decode(base64, Base64.DEFAULT);
-            //String text = new String(data, "UTF-8");
 
             // Encode the strings
             String encodedUser = URLEncoder.encode(base64username);
@@ -479,7 +478,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             return;
         }
 
-
+        // Do the actual POST request
         client.post(getApplicationContext(), loginURL, params, new JsonHttpResponseHandler()
         {
             @Override
@@ -494,7 +493,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
 
                 LoginEvent e = new LoginEvent();
+
                 e.putSuccess(true);
+
                 Answers.getInstance().logLogin(e);
 
                 // Show the drawer activity
@@ -547,10 +548,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
             }
-
-
         });
-
     }
 }
 
