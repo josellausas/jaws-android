@@ -44,6 +44,10 @@ public class LLEstablishment extends SugarRecord implements LLTarget, LLSendable
         return o;
     }
 
+    /**
+     * Update this object with a JSON
+     * @param json The json that will update
+     */
     public void updateWithJSON(JSONObject json)
     {
         try

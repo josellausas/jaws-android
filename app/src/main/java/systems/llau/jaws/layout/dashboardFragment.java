@@ -4,12 +4,14 @@ import android.app.Fragment;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.PieChart;
@@ -23,7 +25,14 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import systems.llau.jaws.LLau.LLContact;
+import systems.llau.jaws.LLau.LLMessage;
+import systems.llau.jaws.LLau.LLOrganization;
+import systems.llau.jaws.LLau.LLOutcome;
+import systems.llau.jaws.LLau.LLTask;
+import systems.llau.jaws.LLau.LLUser;
 import systems.llau.jaws.R;
 
 /**
@@ -91,7 +100,7 @@ public class DashboardFragment extends Fragment implements
         // add a selection listener
         pieChart.setOnChartValueSelectedListener(this);
 
-        setData(3, 100);
+        setData();
 
         pieChart.animateY(1400, Easing.EasingOption.EaseInOutQuad);
         // mChart.spin(2000, 0, 360);
@@ -112,10 +121,11 @@ public class DashboardFragment extends Fragment implements
         // Init the pie chart
         pieChart = (PieChart)rootView.findViewById(R.id.chart1);
 
-        pieChart.setUsePercentValues(true);
+        pieChart.setUsePercentValues(true);     // Use percentage values
 
-        pieChart.setDescription("Time usage");
+        pieChart.setDescription("System Stats");  // Description
         pieChart.setExtraOffsets(5, 10, 5, 5);
+
 
         pieChart.setDragDecelerationFrictionCoef(0.95f);
 
@@ -132,6 +142,7 @@ public class DashboardFragment extends Fragment implements
         pieChart.setCenterText("Analitics");
 
         pieChart.setRotationAngle(0);
+
         // enable rotation of the chart by touch
         pieChart.setRotationEnabled(true);
         pieChart.setHighlightPerTapEnabled(true);
@@ -142,7 +153,8 @@ public class DashboardFragment extends Fragment implements
         // add a selection listener
         pieChart.setOnChartValueSelectedListener(this);
 
-        setData(3, 100);
+        // Set the chart's data
+        setData();
 
         pieChart.animateY(1400, Easing.EasingOption.EaseInOutQuad);
         // mChart.spin(2000, 0, 360);
@@ -156,42 +168,75 @@ public class DashboardFragment extends Fragment implements
 
     /**
      * Sets the data for the chart
-     * @param count Count of sample data
-     * @param range The range of randomness
      */
-    private void setData(int count, float range)
+    private void setData()
     {
-        float mult = range;
+        long tasksCount     = LLTask.count(LLTask.class);
+        long contactsCount  = LLContact.count(LLContact.class);
+        long messagesCount  = LLMessage.count(LLMessage.class);
+        long organizationsCount = LLOrganization.count(LLOrganization.class);
+        long usersCount     = LLUser.count(LLUser.class);
+        long outcomesCount  = LLOutcome.count(LLOutcome.class);
 
-        String[] mParties = {"Dato A","Dato B","Dato C","Dato D"};
+
+        String[] mParties = {"Tasks","Contacts","Messages","Orgs", "Users", "Outcomes"};
 
         ArrayList<Entry> yVals1 = new ArrayList<Entry>();
+        ArrayList<String> xVals = new ArrayList<String>();
 
         // IMPORTANT: In a PieChart, no values (Entry) should have the same
         // xIndex (even if from different DataSets), since no values can be
         // drawn above each other.
-        for (int i = 0; i < count + 1; i++) {
-            yVals1.add(new Entry((float) (Math.random() * mult) + mult / 5, i));
+
+        int indexCount = 0;
+
+        if(tasksCount > 0)
+        {
+            yVals1.add(new Entry(tasksCount, indexCount++));
+            xVals.add("Tasks");
         }
 
-        ArrayList<String> xVals = new ArrayList<String>();
+        if(contactsCount > 0){
+            yVals1.add(new Entry(contactsCount, indexCount++));
+            xVals.add("Contacts");
+        }
 
-        for (int i = 0; i < count + 1; i++)
-            xVals.add(mParties[i % mParties.length]);
+        if(messagesCount > 0){
+            yVals1.add(new Entry(messagesCount, indexCount++));
+            xVals.add("Messages");
+        }
 
-        PieDataSet dataSet = new PieDataSet(yVals1, "Time spent");
+        if(organizationsCount > 0)
+        {
+            yVals1.add(new Entry(organizationsCount, indexCount++));
+            xVals.add("Orgs");
+        }
+
+
+        if(usersCount > 0 )
+        {
+            yVals1.add(new Entry(usersCount, indexCount++));
+            xVals.add("Users");
+        }
+
+        if(outcomesCount > 0)
+        {
+            yVals1.add(new Entry(outcomesCount, indexCount++));
+            xVals.add("Outcomes");
+        }
+
+        PieDataSet dataSet = new PieDataSet(yVals1, "Count");
         dataSet.setSliceSpace(2f);
         dataSet.setSelectionShift(5f);
 
         // add a lot of colors
-
         ArrayList<Integer> colors = new ArrayList<Integer>();
 
         for (int c : ColorTemplate.VORDIPLOM_COLORS)
             colors.add(c);
 
-//        for (int c : ColorTemplate.JOYFUL_COLORS)
-//            colors.add(c);
+        for (int c : ColorTemplate.JOYFUL_COLORS)
+            colors.add(c);
 //
 //        for (int c : ColorTemplate.COLORFUL_COLORS)
 //            colors.add(c);
@@ -233,6 +278,8 @@ public class DashboardFragment extends Fragment implements
         Log.i("VAL SELECTED",
                 "Value: " + e.getVal() + ", xIndex: " + e.getXIndex()
                         + ", DataSet index: " + dataSetIndex);
+
+        Toast.makeText(getActivity(),"Val="+e.getVal(), Toast.LENGTH_SHORT).show();
     }
 
     /**
