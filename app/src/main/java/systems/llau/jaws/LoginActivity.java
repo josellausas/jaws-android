@@ -42,6 +42,7 @@ import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.LoginEvent;
 import com.loopj.android.http.*;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import systems.llau.jaws.LLau.LLSyncManager;
 import static android.Manifest.permission.READ_CONTACTS;
@@ -272,6 +273,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // perform the user login attempt.
 
             showProgress(true);
+            Log.e("JWS", "EMAIL="+email + " PASS="+password);
 
             getPermissionFromServer(email, password);
         }
@@ -443,6 +445,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      */
     private void getPermissionFromServer(final String username, final String password)
     {
+        Log.e("JWS","USER="+username + " PWD="+password );
+
+
         // This is the server's URL
         String loginURL = getString(R.string.url_login);
 
@@ -482,33 +487,41 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         client.post(getApplicationContext(), loginURL, params, new JsonHttpResponseHandler()
         {
             @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONArray response)
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response)
             {
                 showProgress(false);
-
-                // Needed for everything to work:
                 LLSyncManager.getInstance().init(username);
 
-                boolean success = LLSyncManager.getInstance().syncUsers(response);
+                try
+                {
+                    // This means we are authorized
+                    String key = response.getString("msg");
+                    // TODO: Save the key somewhere safe
+                    Log.i("JWS", "The key: " + key);
 
+                    // Log the event with Crashlytics
+                    LoginEvent e = new LoginEvent();
+                    e.putSuccess(true);
+                    Answers.getInstance().logLogin(e);
 
-                LoginEvent e = new LoginEvent();
-
-                e.putSuccess(true);
-
-                Answers.getInstance().logLogin(e);
-
-                // Show the drawer activity
-                if (success == true) {
                     // App success behavior
                     saveCredentials(username, password);
 
-                    Toast.makeText(getMyself(), "Login OK!", Toast.LENGTH_SHORT).show();
+                    // Start the next thing
                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                     startActivity(intent);
-                } else {
-                    Toast.makeText(getApplicationContext(), "Failed Initial Sync! Please retry", Toast.LENGTH_SHORT).show();
                 }
+                catch (JSONException e)
+                {
+                    e.printStackTrace();
+                    Crashlytics.getInstance().logException(e);
+                }
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONArray response)
+            {
+                Log.e("JWS", "A weird kind of success");
             }
 
             @Override

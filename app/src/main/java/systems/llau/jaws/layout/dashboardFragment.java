@@ -27,8 +27,7 @@ import java.util.ArrayList;
 import systems.llau.jaws.R;
 
 /**
- * @class DashboardFragment
- * @brief Shows the Dashboard for the app
+ * Shows the Dashboard for the app
  * Created by pp on 12/30/15.
  */
 public class DashboardFragment extends Fragment implements

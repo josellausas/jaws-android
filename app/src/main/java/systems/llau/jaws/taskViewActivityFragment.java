@@ -33,8 +33,8 @@ public class taskViewActivityFragment extends Fragment
         View rootView = inflater.inflate(R.layout.fragment_task_view, container, false);
 
         titleLabel = (TextView)rootView.findViewById(R.id.titleLabel);
-        dateLabel = (TextView)rootView.findViewById(R.id.dateLabel);
-        noteLabel = (TextView)rootView.findViewById(R.id.noteLabel);
+        dateLabel  = (TextView)rootView.findViewById(R.id.dateLabel);
+        noteLabel  = (TextView)rootView.findViewById(R.id.noteLabel);
 
         this.selectedTask = AppManager.getInstance().getSelectedTask();
         if(this.selectedTask != null)

@@ -7,7 +7,7 @@ import org.json.JSONObject;
  * Created by pp on 1/31/16.
  */
 
-public class LLNotification
+public class LLNotification implements LLSendable
 {
     private int severe;
     private String msg;
@@ -18,6 +18,20 @@ public class LLNotification
         this.severe = severity;
         this.msg = message;
         this.identifier = id;
+    }
+
+    public void updateWithJSON(JSONObject json)
+    {
+        try
+        {
+            this.severe = json.getInt("severe");
+            this.msg = json.getString("msg");
+            this.identifier = json.getString("ip");
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     public JSONObject toJSON()

@@ -4,6 +4,9 @@ import android.content.Context;
 import android.location.Location;
 import com.orm.SugarRecord;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.sql.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -14,7 +17,7 @@ import systems.llau.jaws.layout.ListItemInterface;
 /**
  * Created by pp on 3/23/16.
  */
-public class LLLocation extends LLLogable implements ListItemInterface
+public class LLLocation extends LLLogable implements ListItemInterface, LLSendable
 {
     double latitude;        /** Latitude */
     double longitude;       /** Longitude */
@@ -51,6 +54,19 @@ public class LLLocation extends LLLogable implements ListItemInterface
         super(System.currentTimeMillis());
         this.latitude  = lat;
         this.longitude = longi;
+    }
+
+    public void updateWithJSON(JSONObject json)
+    {
+        try
+        {
+            this.latitude = json.getDouble("latitude");
+            this.longitude = json.getDouble("longitude");
+        }catch (JSONException e)
+        {
+            e.printStackTrace();;
+        }
+
     }
 
     /**
@@ -94,4 +110,25 @@ public class LLLocation extends LLLogable implements ListItemInterface
         return this.longitude;
     }
 
+    /**
+     * Converts the object into a JSON
+     * @return The JSON representation
+     */
+    @Override public JSONObject toJSON()
+    {
+        JSONObject o = null;
+        try
+        {
+            o = new JSONObject();
+            o.put("latitude", this.latitude);
+            o.put("longitude", this.longitude);
+        }
+        catch (JSONException e)
+        {
+            o = null;
+            e.printStackTrace();
+        }
+
+        return o;
+    }
 }

@@ -4,19 +4,60 @@ import android.content.Context;
 
 import com.orm.SugarRecord;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import systems.llau.jaws.Base.LLSendable;
 
 /**
  * Created by pp on 12/31/15.
  * @class LLEstablishment
  * @brief Abstracts an establishment
  */
-public class LLEstablishment extends SugarRecord implements LLTarget
+public class LLEstablishment extends SugarRecord implements LLTarget, LLSendable
 {
     private String name;            /** The name */
     private LLOrganization parent;  /** The parent organization */
     private LLContact mainContact;  /** The point of contact for the establishment */
+
+
+    /**
+     * Converts to a sendable JSON
+     * @return JSONObject The JSON representation
+     */
+    public JSONObject toJSON()
+    {
+        JSONObject o = null;
+        try
+        {
+            o.put("name", this.name);
+            o.put("parent", this.parent.toJSON());
+            o.put("mainContact", this.mainContact.toJSON());
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+        return o;
+    }
+
+    public void updateWithJSON(JSONObject json)
+    {
+        try
+        {
+            this.name = json.getString("name");
+            this.parent.updateWithJSON(json.getJSONObject("parent"));
+            this.mainContact.updateWithJSON((json.getJSONObject("mainContact")));
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+
+    }
 
     /**
      * Custom constructor
