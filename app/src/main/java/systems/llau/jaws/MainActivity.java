@@ -1,12 +1,16 @@
 package systems.llau.jaws;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -21,6 +25,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -45,6 +50,7 @@ import systems.llau.jaws.layout.GeoFencesFragment;
 import systems.llau.jaws.layout.LocationListFragment;
 import systems.llau.jaws.layout.MessagesFragment;
 import systems.llau.jaws.layout.TaskListFragment;
+import systems.llau.jaws.layout.ToolsFragment;
 import systems.llau.jaws.layout.UserListFragment;
 import java.util.ArrayList;
 
@@ -512,7 +518,8 @@ public class MainActivity extends AppCompatActivity implements
             case R.id.nav_dev_tools:
             {
                 setTitle("Dev Tools");
-                // TODO: Implement
+                ToolsFragment toolsFragment = new ToolsFragment();
+                showFragmentNow(toolsFragment);
 
             }break;
 
@@ -558,14 +565,53 @@ public class MainActivity extends AppCompatActivity implements
     {
         // The connection got suspended
     }
+    private void buildAlertMessageNoGps()
+    {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Your GPS seems to be disabled, do you want to enable it?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener()
+                {
+                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id)
+                    {
+                        startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener()
+                {
+                    public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id)
+                    {
+                        dialog.cancel();
+                    }
+                });
+        final AlertDialog alert = builder.create();
+        alert.show();
+    }
 
     /// Gets the last known location
     public Location getLastLocation()
     {
+        final LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         if(permissionCheck == PackageManager.PERMISSION_GRANTED)
         {
+            if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) )
+            {
+                Crashlytics.getInstance().log("Started app withouth GPS");
+                buildAlertMessageNoGps();
+                return null;
+            }
+
+
             lastLocation = LocationServices.FusedLocationApi.getLastLocation(apiClient);
+
+            if(lastLocation == null)
+            {
+                // What??
+                Crashlytics.getInstance().logException(new RuntimeException("Last known location was null"));
+
+                return null;
+            }
 
             LLLocation instancedLocation = new LLLocation(lastLocation);
             instancedLocation.save();

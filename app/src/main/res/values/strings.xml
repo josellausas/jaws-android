@@ -22,7 +22,10 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_new_task">NewTaskActivity</string>
     <string name="title_activity_task_view">taskViewActivity</string>
-    <string name="url_login">https://www.llau.systems/api/auth</string>
+    <string name="url_login">https://lua-wapi.herokuapp.com/api/v1/auth</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 
 </resources>

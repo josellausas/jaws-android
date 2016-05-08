@@ -44,6 +44,8 @@ import com.loopj.android.http.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import systems.llau.jaws.Base.AppManager;
 import systems.llau.jaws.LLau.LLSyncManager;
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -494,9 +496,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
                 try
                 {
-                    // This means we are authorized
+                    // This means we are authorized. Store the key so we can access laters
                     String key = response.getString("msg");
-                    // TODO: Save the key somewhere safe
+                    AppManager.getInstance().setSecretKey(key);
+
+
                     Log.i("JWS", "The key: " + key);
 
                     // Log the event with Crashlytics

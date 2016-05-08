@@ -37,6 +37,11 @@ public class LLLocation extends LLLogable implements ListItemInterface, LLSendab
     public LLLocation(Location l)
     {
         super(System.currentTimeMillis());
+        if(l == null)
+        {
+            // This is not allowed
+            throw new IllegalArgumentException("Cannot instantiate LLLocation with a null parameter");
+        }
         this.latitude  = l.getLatitude();
         this.longitude = l.getLongitude();
     }
