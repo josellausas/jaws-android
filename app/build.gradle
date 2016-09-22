@@ -85,7 +85,10 @@ dependencies {
     }
     compile fileTree(dir: 'native-libs', include: 'native-libs.jar')
     compile 'com.wdullaer:materialdatetimepicker:2.3.0'
+    compile 'com.google.apis:google-api-services-oauth2:v1-rev112-1.22.0'
     compile 'com.google.android.gms:play-services-location:8.4.0'
+    compile 'com.google.android.gms:play-services:8.4.0'
+    // This is for oAuth2 - https://github.com/wuman/android-oauth-client
+//    compile files('libs/android-oauth-client-0.4.5.jar')
+
 }
-
-
